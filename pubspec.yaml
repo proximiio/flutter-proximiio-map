@@ -1,0 +1,20 @@
+name: flutter_proximiio_map
+description: Flutter widget for Proximiio indoor maps with real-time positioning
+version: 1.0.0
+homepage: https://github.com/proximiio/flutter-proximiio-map
+
+environment:
+  sdk: ^3.5.0
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.10.0
+  flutter_proximiio:
+    path: ../flutter_proximiio
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
