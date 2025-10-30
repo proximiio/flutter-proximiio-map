@@ -37,6 +37,11 @@ class _ProximiioMapWidgetState extends State<ProximiioMapWidget> {
   StreamSubscription? _positionSubscription;
   StreamSubscription? _floorSubscription;
 
+  // Track current location and floor
+  double? _currentLat;
+  double? _currentLng;
+  int _currentLevel = 0;
+
   @override
   void initState() {
     super.initState();
@@ -115,14 +120,9 @@ class _ProximiioMapWidgetState extends State<ProximiioMapWidget> {
     FlutterProximiio.subscribe(
       ProximiioEvents.positionUpdated,
       (ProximiioLocation location) {
-        if (_isReady) {
-          _postMessage('updateLocation', {
-            'latitude': location.lat,
-            'longitude': location.lng,
-            'accuracy': location.accuracy ?? 0.0,
-            'sourceType': location.sourceType ?? 'unknown',
-          });
-        }
+        _currentLat = location.lat;
+        _currentLng = location.lng;
+        _sendLocationUpdate();
       },
     );
 
@@ -130,15 +130,32 @@ class _ProximiioMapWidgetState extends State<ProximiioMapWidget> {
     FlutterProximiio.subscribe(
       ProximiioEvents.floorChanged,
       (ProximiioFloor floor) {
-        if (_isReady) {
-          _postMessage('updateFloor', {
-            'id': floor.id,
-            'name': floor.name,
-            'level': floor.level,
-          });
-        }
+        _currentLevel = floor.level;
+        _sendLocationUpdate();
       },
     );
+  }
+
+  void _sendLocationUpdate() {
+    if (!_isReady || _currentLat == null || _currentLng == null) {
+      debugPrint('[Proximiio Map] Cannot send location update - map not ready or location unavailable');
+      return;
+    }
+
+    final locationData = {
+      "type": "SET_LOCATION",
+      "latitude": _currentLat,
+      "longitude": _currentLng,
+      "level": _currentLevel,
+      "accelAvailable": true,
+      "isInMovement": true
+    };
+
+    final jsonString = jsonEncode(locationData);
+    final script = "window.postMessage('$jsonString', '*');";
+
+    debugPrint('[Proximiio Map] Sending location update: $jsonString');
+    _controller.runJavaScript(script);
   }
 
   void _markAsReady() {
