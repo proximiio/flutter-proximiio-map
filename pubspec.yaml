@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
   webview_flutter: ^4.10.0
   flutter_proximiio:
-    path: ../flutter_proximiio
+    git:
+      url: https://github.com/proximiio/flutter-proximiio.git
 
 dev_dependencies:
   flutter_test:
