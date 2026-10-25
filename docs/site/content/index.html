@@ -1,0 +1,76 @@
+<!--
+title: Proximi.io Flutter map
+description: Flutter widget for the Proximi.io venue map, built on the native iOS and Android Map v6 libraries.
+layout: landing
+-->
+
+<section class="docs-hero">
+  <span class="docs-hero-mark">
+    <img src="{{root}}assets/proximi-logo.png" width="2082" height="532" alt="Proximi.io">
+  </span>
+  <h1 class="docs-hero-title">Proximi.io Flutter map v6</h1>
+  <p class="docs-hero-tagline">The venue map, floors, routes, guidance and journeys, as one Flutter widget.</p>
+  <p class="docs-hero-lede">
+    <code>flutter_proximiio_map</code> shows the native Proximi.io Map v6 for iOS and Android as a
+    Flutter platform view. It draws the organisation's style, the visitor's position and floor from
+    <code>flutter_proximiio</code>, routes, turn-by-turn guidance and multi-stop journeys.
+  </p>
+  <div class="docs-hero-actions">
+    <a class="btn btn-accent" href="{{root}}getting-started/installation.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      Install
+    </a>
+    <a class="btn" href="{{root}}getting-started/first-map.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3-6 3v15l6-3 6 3 6-3V3l-6 3-6-3Z"/><path d="M9 3v15m6-12v15"/></svg>
+      Your first map
+    </a>
+  </div>
+</section>
+
+<section class="docs-card-grid" aria-label="Documentation sections">
+  <a class="docs-card" href="{{root}}concepts/platform-view.html">
+    <span class="docs-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg></span>
+    <span class="docs-card-title">The platform view</span>
+    <span class="docs-card-desc">Native map inside Flutter: gestures, composition, lifecycle.</span>
+  </a>
+  <a class="docs-card" href="{{root}}guides/route.html">
+    <span class="docs-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17c4-8 14-2 18-10"/><circle cx="3" cy="17" r="2"/><circle cx="21" cy="7" r="2"/></svg></span>
+    <span class="docs-card-title">Routes and guidance</span>
+    <span class="docs-card-desc">Show a route and follow it with turn-by-turn instructions.</span>
+  </a>
+  <a class="docs-card" href="{{root}}guides/journeys.html">
+    <span class="docs-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M6 8l5 8m7-8-5 8"/></svg></span>
+    <span class="docs-card-title">Multi-stop journeys</span>
+    <span class="docs-card-desc">Tours and visit plans with stops, detours and reordering.</span>
+  </a>
+  <a class="docs-card" href="{{root}}api/controller.html">
+    <span class="docs-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg></span>
+    <span class="docs-card-title">API reference</span>
+    <span class="docs-card-desc">The widget, the controller, the options and the journey types.</span>
+  </a>
+</section>
+
+<h2>The shortest integration</h2>
+
+<pre><code class="language-dart">final sdk = await Proximiio.create(const ProximiioConfiguration(token: token));
+await sdk.authenticate();
+await sdk.start();
+
+// In a widget tree:
+const ProximiioMap(options: MapOptions(floorSelector: FloorSelectorPosition.trailing));</code></pre>
+
+<p>
+  The map uses the SDK instance <code>Proximiio.create</code> made. Create it before the map; the
+  map then shows the venue, the position dot and the floor of that instance.
+</p>
+
+<h2>Platforms and versions</h2>
+
+<table>
+  <thead><tr><th>flutter_proximiio_map</th><th>flutter_proximiio</th><th>iOS Map</th><th>Android Map</th></tr></thead>
+  <tbody>
+    <tr><td>6.0.0-beta.1</td><td>6.0.0-beta.1</td><td>6.0.0-beta.51</td><td>6.0.0-beta.27</td></tr>
+  </tbody>
+</table>
+
+<p>On iOS the map needs Flutter's Swift Package Manager support. See <a href="{{root}}getting-started/installation.html">Installation</a>.</p>

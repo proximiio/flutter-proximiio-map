@@ -1,0 +1,33 @@
+<!--
+title: Venue features and taps
+description: Choose which venue layers are drawn, hide features, show amenity icons, and react to taps.
+-->
+
+<h2>Layers</h2>
+
+<pre><code class="language-dart">const MapOptions(features: MapFeatures.venueDefaults());   // default: everything but the paths
+const MapOptions(features: MapFeatures.only(MapLayerToggles(paths: true, baseTiles: false)));
+const MapOptions(features: MapFeatures.none());</code></pre>
+
+<p><code>MapLayerToggles</code>: <code>paths</code>, <code>walls</code>, <code>shops</code>, <code>pois</code>, <code>amenities</code>, <code>baseTiles</code>.</p>
+
+<h2>Amenity icons</h2>
+
+<p><code>MapOptions(amenities: false)</code> hides the amenity icons of POIs.</p>
+
+<h2>Hide features</h2>
+
+<p>Hide features the app draws differently, for example a selected POI shown with your own marker:</p>
+
+<pre><code class="language-dart">await map.setHiddenFeatureIds({selectedPoi.id});</code></pre>
+
+<h2>Taps</h2>
+
+<pre><code class="language-dart">map.featureTaps.listen((tap) async {
+  if (tap.featureIds.isEmpty) return;
+  final features = {for (final f in await sdk.features()) f.id: f};
+  final poi = features[tap.featureIds.first];
+  showPoiSheet(poi?.title());
+});</code></pre>
+
+<p>A tap reports the ids of the venue features under it and its coordinate. The features themselves come from <code>sdk.features()</code>.</p>

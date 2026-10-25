@@ -1,0 +1,47 @@
+<!--
+title: The organization style
+description: Where the map style comes from, how it is cached, and what the fallback means.
+-->
+
+<p>
+  The map draws the organisation's MapLibre style from the Proximi.io API. The style is read through
+  the SDK and stored on the device.
+</p>
+
+<h2>Sources</h2>
+
+<table>
+  <thead><tr><th><code>MapStyleSource</code></th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>pending</code></td><td>Loading</td></tr>
+    <tr><td><code>cache</code></td><td>The style stored on an earlier run</td></tr>
+    <tr><td><code>organization</code></td><td>The organisation's style from the API</td></tr>
+    <tr><td><code>offlinePackage</code></td><td>The style of an installed offline package (<code>MapOptions.offlinePackageId</code>)</td></tr>
+    <tr><td><code>fallback</code></td><td>The organisation style could not be loaded; the map shows <code>MapOptions.fallbackStyleUrl</code></td></tr>
+  </tbody>
+</table>
+
+<pre><code class="language-dart">ValueListenableBuilder(
+  valueListenable: map.styleSource,
+  builder: (context, source, _) =&gt; source == MapStyleSource.fallback
+      ? const Text('Venue map unavailable')
+      : const SizedBox.shrink(),
+)</code></pre>
+
+<h2>The credential</h2>
+
+<p>
+  Tiles, glyphs and sprites from the API host are requested with the application token as an
+  <code>Authorization</code> header. The token never appears in a URL or in the stored style.
+</p>
+
+<h2>Changes</h2>
+
+<p>When the organisation's style changes, the map loads the new style. A refresh that returns the same style does not reload the map.</p>
+
+<h2>Related documentation</h2>
+
+<ul>
+  <li><a href="{{root}}guides/offline.html">Offline</a></li>
+  <li><a href="{{root}}guides/attribution.html">Attribution and licences</a></li>
+</ul>

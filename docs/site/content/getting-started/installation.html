@@ -1,0 +1,63 @@
+<!--
+title: Installation
+description: Add flutter_proximiio_map, turn on Swift Package Manager for iOS, and set the Android build.
+-->
+
+<p>
+  The map package depends on <code>flutter_proximiio</code>. Set up that plugin first; its
+  installation guide covers the SDK repositories, Info.plist keys and Android build settings the map
+  needs too.
+</p>
+
+<h2>Add the packages</h2>
+
+<pre><code class="language-yaml">dependencies:
+  flutter_proximiio:
+    git:
+      url: https://github.com/proximiio/flutter-proximiio
+      ref: 6.0.0-beta.1
+  flutter_proximiio_map:
+    git:
+      url: https://github.com/proximiio/flutter-proximiio-map
+      ref: 6.0.0-beta.1</code></pre>
+
+<p>Use the pair of versions from <a href="{{root}}reference/versioning.html">Versioning and releases</a>.</p>
+
+<h2>iOS</h2>
+
+<p>The iOS map library ships only as a Swift package. Turn on Flutter's Swift Package Manager support:</p>
+
+<pre><code class="language-sh">flutter config --enable-swift-package-manager</code></pre>
+
+<p>
+  The plugin's package then pulls <code>proximiio/proximiio-map-ios-binary</code> and the SDK. Minimum
+  iOS 15.
+</p>
+
+<div class="doc-aside doc-aside-caution"><p>
+  Built through CocoaPods, the plugin compiles, but every map shows a notice instead of the map and
+  each controller call throws <code>MapErrorCode.unsupported</code>.
+</p></div>
+
+<p>
+  The iOS map pins MapLibre at exactly 6.29.0. An app that also uses another MapLibre plugin must use
+  the same MapLibre version.
+</p>
+
+<h2>Android</h2>
+
+<p>
+  The map comes from <code>https://maven.eu.proximi.fi/releases/</code>, the repository the SDK uses.
+  The build settings of <code>flutter_proximiio</code> apply: minSdk 26, compileSdk 37, Android Gradle
+  Plugin 8.13, Kotlin 2.2.
+</p>
+
+<h2>Verify</h2>
+
+<p>Run the example app: <code>cd example &amp;&amp; flutter run --dart-define-from-file=env.json</code>. The venue appears with the floor picker on the right.</p>
+
+<h2>Next</h2>
+
+<ul>
+  <li><a href="{{root}}getting-started/first-map.html">Your first map</a></li>
+</ul>

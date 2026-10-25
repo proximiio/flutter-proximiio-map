@@ -1,0 +1,104 @@
+<!--
+title: Multi-stop journeys
+description: Run a tour or visit plan with JourneyNavigator — stops, legs, detours, reordering, events and cues.
+-->
+
+<p>
+  A journey is a list of stops the visitor walks in order. <code>JourneyNavigator</code> routes each
+  leg, draws it, follows the visitor, reports reached and passed stops, and reroutes after a deviation.
+</p>
+
+<h2>Build a journey</h2>
+
+<pre><code class="language-dart">const journey = Journey([
+  JourneyStop(id: 'atrium', title: 'Atrium', coordinate: Coordinate(latitude: 24.4866, longitude: 54.6074), level: 0),
+  JourneyStop(id: 'gallery-3', title: 'Gallery 3', coordinate: Coordinate(latitude: 24.4871, longitude: 54.6081), level: 1),
+]);
+
+// Or from a journey edited in the Map Editor:
+final tours = await sdk.journeys();
+final fromEditor = Journey.fromProximiioJourney(tours.first);</code></pre>
+
+<p><code>Journey.toJson</code> and <code>Journey.fromJson</code> store a journey, for example to resume it after a restart.</p>
+
+<h2>Start it</h2>
+
+<pre><code class="language-dart">final navigator = await map.startJourney(
+  journey,
+  rules: const JourneyRules(advanceOnDepartureMeters: 8),
+  routeOptions: const RouteOptions(profile: RouteProfile.wheelchair),
+);</code></pre>
+
+<p>
+  With <code>advanceOnDepartureMeters</code> the navigator moves to the next stop once the visitor
+  walks that far from a reached one; without it, call <code>navigator.advance()</code>. One journey runs
+  per map; starting another replaces it.
+</p>
+
+<h2>State</h2>
+
+<pre><code class="language-dart">ValueListenableBuilder(
+  valueListenable: navigator.state,
+  builder: (context, state, _) {
+    if (state == null) return const SizedBox.shrink();
+    return Text('${state.activeStop?.title}: ${state.overview.activeLegRemainingMeters?.round()} m, '
+        '${state.overview.remainingStopIds.length} stops left');
+  },
+)</code></pre>
+
+<p>
+  <code>JourneyState</code> holds the journey with each stop's state (<code>pending</code>,
+  <code>active</code>, <code>reached</code>, <code>done</code>, <code>skipped</code>), the overview of
+  distances and times, the deviation while off route, and the stops no route leads to.
+  <code>navigator.guidance</code> is the guidance of the active leg.
+</p>
+
+<h2>Events and cues</h2>
+
+<pre><code class="language-dart">navigator.events.listen((event) {
+  switch (event) {
+    case JourneyStopReached(:final stop):
+      showStopCard(stop);
+    case JourneyLeftRoute(:final distanceMeters):
+      log('off route by $distanceMeters m');
+    case JourneyFinished():
+      showSummary();
+    default:
+      break;
+  }
+});
+navigator.cues.listen((cue) =&gt; speak(cue.text));</code></pre>
+
+<h2>Change the plan</h2>
+
+<table>
+  <thead><tr><th>Call</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><code>advance()</code>, <code>skip()</code></td><td>Next stop; skip the active one</td></tr>
+    <tr><td><code>markDone(id)</code>, <code>skipStop(id)</code>, <code>reopen(id)</code>, <code>activate(id)</code></td><td>Change one stop</td></tr>
+    <tr><td><code>detour(stop)</code>, <code>cancelDetour()</code></td><td>Walk to another place first</td></tr>
+    <tr><td><code>addStop</code>, <code>insertStop</code>, <code>removeStop</code>, <code>replaceStop</code>, <code>moveStop</code></td><td>Edit the stops</td></tr>
+    <tr><td><code>update(journey)</code></td><td>Replace the journey, keeping progress</td></tr>
+    <tr><td><code>setRouteOptions(options)</code></td><td>Route the remaining legs differently</td></tr>
+    <tr><td><code>resumeJourney()</code></td><td>Resume after a detour or deviation</td></tr>
+  </tbody>
+</table>
+
+<h2>Reorder</h2>
+
+<pre><code class="language-dart">final proposal = await navigator.proposeOrder(pinnedStopIds: {'exit'});
+if (proposal != null &amp;&amp; proposal.savedMeters &gt; 50) {
+  await navigator.apply(proposal);
+}</code></pre>
+
+<p><code>replanFromHere()</code> proposes an order from the visitor's position. <code>apply</code> returns <code>false</code> when the journey changed since the proposal.</p>
+
+<h2>Camera</h2>
+
+<p><code>fitActiveLeg()</code> and <code>fitJourney()</code> frame the leg or the whole journey.</p>
+
+<h2>End it</h2>
+
+<pre><code class="language-dart">await navigator.end();</code></pre>
+
+<p>Removing the map widget ends the journey too.</p>

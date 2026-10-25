@@ -1,0 +1,20 @@
+<!--
+title: Languages
+description: Draw POI labels, floor names and guidance in the app's language.
+-->
+
+<p><code>MapOptions.language</code> sets the language of POI labels, floor names and guidance text.</p>
+
+<table>
+  <thead><tr><th>Value</th><th>Language drawn</th></tr></thead>
+  <tbody>
+    <tr><td><code>null</code> (default)</td><td>The app's language as the platform reports it</td></tr>
+    <tr><td><code>'ar'</code>, <code>'en'</code>, …</td><td>That language, where the venue data has a translation</td></tr>
+  </tbody>
+</table>
+
+<pre><code class="language-dart">ProximiioMap(options: MapOptions(language: Localizations.localeOf(context).languageCode));</code></pre>
+
+<p>Rebuilding the widget with another language, or <code>map.setOptions(...)</code>, redraws the labels.</p>
+
+<p>Titles come from the venue data's translations (<code>title_i18n</code>), with the plain title as fallback. Guidance text exists in English and Arabic.</p>

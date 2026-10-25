@@ -1,0 +1,51 @@
+<!--
+title: The blue dot
+description: How the map shows the visitor's position, heading, trail and privacy.
+-->
+
+<p>
+  The map draws the position of the SDK instance itself: a dot, an accuracy ring and a heading beam.
+  No Dart code feeds it; start the SDK and the dot appears.
+</p>
+
+<h2>Heading</h2>
+
+<table>
+  <thead><tr><th><code>HeadingMode</code></th><th>The dot points to</th></tr></thead>
+  <tbody>
+    <tr><td><code>course</code></td><td>The direction of movement (default)</td></tr>
+    <tr><td><code>compass</code></td><td>The compass</td></tr>
+    <tr><td><code>none</code></td><td>Nothing; no beam</td></tr>
+  </tbody>
+</table>
+
+<p>To point it from your own source: <code>map.setHeading(degrees)</code>; <code>setHeading(null)</code> returns to the mode.</p>
+
+<h2>Trail</h2>
+
+<pre><code class="language-dart">const MapOptions(trail: MapTrail.lastMinutes(2));   // or MapTrail.lastFixes(30)</code></pre>
+
+<p><code>map.clearTrail()</code> removes the trail drawn so far.</p>
+
+<h2>Following</h2>
+
+<p>
+  With <code>CameraMode.follow</code> (default) the camera follows the dot; with
+  <code>followWithHeading</code> it also turns with the heading. <code>map.recentre()</code> follows the
+  visitor again after the user moved the map.
+</p>
+
+<h2>Privacy zones</h2>
+
+<p>
+  Inside a privacy zone the dot is drawn grey instead of hidden, so the visitor still sees the map
+  is working. To withhold positions entirely, set <code>withholdsPositionsInPrivacyZones</code> in the
+  SDK configuration.
+</p>
+
+<h2>Related documentation</h2>
+
+<ul>
+  <li><a href="{{root}}guides/camera.html">Camera and insets</a></li>
+  <li><a href="{{root}}concepts/levels.html">Floors</a></li>
+</ul>

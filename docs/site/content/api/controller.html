@@ -1,0 +1,60 @@
+<!--
+title: ProximiioMapController
+description: Every member of the map controller, and the errors it throws.
+-->
+
+<p>One controller per map, from <code>ProximiioMap.onMapCreated</code>. Methods return <code>Future</code>s.</p>
+
+<h2>State</h2>
+
+<table>
+  <thead><tr><th>Member</th><th>Type</th></tr></thead>
+  <tbody>
+    <tr><td><code>floors</code></td><td><code>ValueListenable&lt;List&lt;MapFloor&gt;&gt;</code></td></tr>
+    <tr><td><code>selectedFloor</code></td><td><code>ValueListenable&lt;MapFloorSelection&gt;</code> (<code>level</code>, <code>isPinned</code>)</td></tr>
+    <tr><td><code>cameraMode</code></td><td><code>ValueListenable&lt;CameraMode&gt;</code></td></tr>
+    <tr><td><code>styleSource</code></td><td><code>ValueListenable&lt;MapStyleSource&gt;</code></td></tr>
+    <tr><td><code>guidance</code></td><td><code>ValueListenable&lt;RouteGuidance?&gt;</code></td></tr>
+    <tr><td><code>lastError</code></td><td><code>ValueListenable&lt;String?&gt;</code></td></tr>
+    <tr><td><code>featureTaps</code></td><td><code>Stream&lt;MapFeatureTap&gt;</code></td></tr>
+    <tr><td><code>cameraReady</code></td><td><code>Future&lt;void&gt;</code></td></tr>
+    <tr><td><code>journey</code></td><td><code>JourneyNavigator?</code>, the running journey</td></tr>
+  </tbody>
+</table>
+
+<h2>Methods</h2>
+
+<table>
+  <thead><tr><th>Method</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>setOptions(MapOptions)</code></td><td>Replace the options</td></tr>
+    <tr><td><code>cameraState()</code></td><td><code>MapCameraState</code>: center, zoom, direction, mode</td></tr>
+    <tr><td><code>setCenter(coordinate, {zoom, animated})</code>, <code>setZoom</code>, <code>zoomBy</code>, <code>fitCoordinates</code></td><td>Move the camera</td></tr>
+    <tr><td><code>recentre({zoom, withHeading})</code>, <code>showVenue()</code></td><td>Follow the visitor; frame the venue</td></tr>
+    <tr><td><code>setHeading(degrees)</code></td><td>Point the dot; <code>null</code> returns to <code>MapOptions.heading</code></td></tr>
+    <tr><td><code>selectFloor(level)</code>, <code>followMyFloor()</code></td><td>Floors</td></tr>
+    <tr><td><code>setHiddenFeatureIds(ids)</code>, <code>clearTrail()</code></td><td>Features, trail</td></tr>
+    <tr><td><code>showRoute({from, fromLevel, to, toLevel, options})</code>, <code>clearRoute()</code></td><td>Routes; returns <code>ComputedRoute</code></td></tr>
+    <tr><td><code>setGuidanceRules(rules)</code>, <code>instructionText({destinationTitle})</code></td><td>Guidance</td></tr>
+    <tr><td><code>startJourney(journey, {rules, routeOptions})</code></td><td>Start a journey; returns <code>JourneyNavigator</code></td></tr>
+    <tr><td><code>dispose()</code></td><td>Release the map; the widget calls it</td></tr>
+  </tbody>
+</table>
+
+<h2>Errors</h2>
+
+<p>Route failures are <code>ProximiioException</code>s with <code>ProximiioErrorCode.noRoute</code>. Everything else throws <code>ProximiioMapException</code>:</p>
+
+<table>
+  <thead><tr><th><code>MapErrorCode</code></th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>notConfigured</code></td><td>No SDK instance when the map was created</td></tr>
+    <tr><td><code>notReady</code></td><td>The map was disposed</td></tr>
+    <tr><td><code>noJourney</code></td><td>A journey call without a running journey</td></tr>
+    <tr><td><code>unknownProposal</code></td><td>The proposal was applied already or is unknown</td></tr>
+    <tr><td><code>invalidArgument</code></td><td>A value was rejected</td></tr>
+    <tr><td><code>unsupported</code></td><td>iOS without Swift Package Manager</td></tr>
+    <tr><td><code>underlying</code></td><td>Another failure in the map library</td></tr>
+    <tr><td><code>unknown</code></td><td>A code added after this release</td></tr>
+  </tbody>
+</table>

@@ -1,0 +1,31 @@
+<!--
+title: MapOptions
+description: Every setting of MapOptions and its nested types, with defaults.
+-->
+
+<table>
+  <thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>camera</code></td><td><code>CameraMode.follow</code></td><td>Camera behaviour</td></tr>
+    <tr><td><code>floorSelector</code></td><td><code>none</code></td><td>Built-in floor picker: <code>none</code>, <code>leading</code>, <code>trailing</code></td></tr>
+    <tr><td><code>trail</code></td><td><code>MapTrail.off()</code></td><td><code>lastMinutes(m)</code>, <code>lastFixes(n)</code></td></tr>
+    <tr><td><code>features</code></td><td><code>MapFeatures.venueDefaults()</code></td><td><code>none()</code>, <code>only(MapLayerToggles)</code></td></tr>
+    <tr><td><code>showsRoute</code></td><td><code>true</code></td><td>Draw routes and journey legs</td></tr>
+    <tr><td><code>showsGeofences</code></td><td><code>false</code></td><td>Draw geofences</td></tr>
+    <tr><td><code>contentInsets</code></td><td><code>MapContentInsets.safeArea()</code></td><td>Space kept free</td></tr>
+    <tr><td><code>amenities</code></td><td><code>true</code></td><td>Amenity icons</td></tr>
+    <tr><td><code>fallbackStyleUrl</code></td><td>MapLibre demo tiles</td><td>Style when the organisation style fails</td></tr>
+    <tr><td><code>recentreZoom</code></td><td>18.5</td><td>Zoom of <code>recentre()</code></td></tr>
+    <tr><td><code>offlinePackageId</code></td><td>none</td><td>Take the style from an offline package</td></tr>
+    <tr><td><code>chrome</code></td><td>attribution only</td><td><code>MapChrome</code>; <code>MapChrome.bare</code> hides the credits</td></tr>
+    <tr><td><code>routeLineStyle</code></td><td>amber line, 10</td><td><code>RouteLineStyle(color, toColor, completedColor, width)</code></td></tr>
+    <tr><td><code>routeMarkers</code></td><td>amber markers</td><td><code>RouteMarkerStyle(isVisible, color, completedColor)</code></td></tr>
+    <tr><td><code>geofenceStyle</code></td><td>teal fill</td><td><code>GeofenceStyle(fillColor, fillOpacity, lineColor, lineWidth)</code></td></tr>
+    <tr><td><code>initialFraming</code></td><td><code>allFeatures</code></td><td>First camera position</td></tr>
+    <tr><td><code>language</code></td><td>the device language</td><td>Labels, floor names, guidance</td></tr>
+    <tr><td><code>heading</code></td><td><code>HeadingMode.course</code></td><td><code>course</code>, <code>compass</code>, <code>none</code></td></tr>
+    <tr><td><code>backgroundColor</code></td><td>transparent</td><td>Behind the tiles; keep it transparent on Android</td></tr>
+  </tbody>
+</table>
+
+<p>Options compare by value. Pass <code>const</code> options where you can.</p>

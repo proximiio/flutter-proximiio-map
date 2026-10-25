@@ -1,0 +1,16 @@
+<!--
+title: Route guidance types
+description: RouteFollowRules, RouteGuidance, RouteManoeuvre and ManoeuvreKind.
+-->
+
+<table>
+  <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>RouteFollowRules</code></td><td><code>arrivalRadiusMeters</code>, <code>arrivalDwell</code>, <code>offRouteMeters</code>, <code>offRouteFixes</code>; <code>RouteFollowRules.venueWalk</code></td></tr>
+    <tr><td><code>RouteGuidance</code></td><td><code>manoeuvre</code>, <code>nextManoeuvre</code>, <code>distanceToManoeuvreMeters</code>, <code>remainingMeters</code>, <code>traveledMeters</code>, <code>offRouteMeters</code>, <code>isOffRoute</code>, <code>hasArrived</code>, <code>arrivalProgress</code>, <code>text</code></td></tr>
+    <tr><td><code>RouteManoeuvre</code></td><td><code>kind</code>, <code>coordinate</code>, <code>level</code>, <code>legMeters</code>, <code>levelChange</code></td></tr>
+    <tr><td><code>ManoeuvreKind</code></td><td><code>start</code>, <code>continueStraight</code>, <code>turnSlightLeft</code>, <code>turnLeft</code>, <code>turnSharpLeft</code>, <code>turnSlightRight</code>, <code>turnRight</code>, <code>turnSharpRight</code>, <code>levelChange</code>, <code>arrive</code>, <code>unknown</code></td></tr>
+  </tbody>
+</table>
+
+<p><code>LevelChange</code> and <code>ComputedRoute</code> are the types of <code>flutter_proximiio</code>.</p>

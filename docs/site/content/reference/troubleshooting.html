@@ -1,0 +1,36 @@
+<!--
+title: Troubleshooting
+description: Common map problems and how to find their cause.
+-->
+
+<h2>The map shows "Call Proximiio.create(...) before showing the map"</h2>
+
+<p>The widget was built before the SDK instance existed. Await <code>Proximiio.create</code> before building <code>ProximiioMap</code>.</p>
+
+<h2>The map shows "needs Flutter's Swift Package Manager support"</h2>
+
+<p>The iOS app builds plugins through CocoaPods. Run <code>flutter config --enable-swift-package-manager</code>.</p>
+
+<h2>Only the dot, no venue</h2>
+
+<ul>
+  <li><code>styleSource</code> is <code>fallback</code>: the organisation style could not be loaded. Check the connection and the token's host.</li>
+  <li><code>lastError</code> names the failure.</li>
+  <li><code>features: MapFeatures.none()</code> hides the venue.</li>
+</ul>
+
+<h2>showRoute throws noRoute / emptyNetwork</h2>
+
+<p>The SDK's route network is not installed: call <code>sdk.loadRouteNetwork()</code> after <code>authenticate</code>.</p>
+
+<h2>The map does not pan inside a scroll view</h2>
+
+<p>Custom <code>gestureRecognizers</code> without an eager recognizer let the scroll view win. Leave the parameter out, or include <code>EagerGestureRecognizer</code>.</p>
+
+<h2>Android: the map stutters while scrolling Flutter content</h2>
+
+<p>An opaque <code>MapOptions.backgroundColor</code> switches the map to a <code>SurfaceView</code>. Leave it transparent.</p>
+
+<h2>iOS: two MapLibre versions</h2>
+
+<p>The iOS map pins MapLibre 6.29.0 exactly. Another plugin that brings a different MapLibre version cannot resolve with it.</p>

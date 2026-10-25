@@ -1,0 +1,71 @@
+<!--
+title: Your first map
+description: Create the SDK, show the map, and keep the controller for floors, routes and the camera.
+-->
+
+<h2>Prerequisites</h2>
+
+<ul>
+  <li><code>flutter_proximiio</code> set up and an application token.</li>
+  <li>An SDK instance from <code>Proximiio.create</code>, authenticated, before the map is shown.</li>
+</ul>
+
+<h2>Show the map</h2>
+
+<pre><code class="language-dart">class VenueMapPage extends StatefulWidget {
+  const VenueMapPage({super.key});
+
+  @override
+  State&lt;VenueMapPage&gt; createState() =&gt; _VenueMapPageState();
+}
+
+class _VenueMapPageState extends State&lt;VenueMapPage&gt; {
+  ProximiioMapController? _map;
+
+  @override
+  Widget build(BuildContext context) =&gt; Scaffold(
+    body: ProximiioMap(
+      options: const MapOptions(floorSelector: FloorSelectorPosition.trailing),
+      onMapCreated: (controller) =&gt; setState(() =&gt; _map = controller),
+    ),
+  );
+}</code></pre>
+
+<p>
+  The widget creates the native map, then calls <code>onMapCreated</code> once with its controller.
+  Removing the widget releases the map.
+</p>
+
+<h2>Read the map's state</h2>
+
+<p>State the map changes by itself is exposed as <code>ValueListenable</code>s:</p>
+
+<pre><code class="language-dart">ValueListenableBuilder(
+  valueListenable: map.selectedFloor,
+  builder: (context, floor, _) =&gt; Text('Floor ${floor.level}'),
+)</code></pre>
+
+<table>
+  <thead><tr><th>Listenable</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td><code>floors</code></td><td>The venue's floors</td></tr>
+    <tr><td><code>selectedFloor</code></td><td>The floor shown and whether it is pinned</td></tr>
+    <tr><td><code>cameraMode</code></td><td><code>free</code>, <code>follow</code>, <code>followWithHeading</code></td></tr>
+    <tr><td><code>styleSource</code></td><td>Where the style came from</td></tr>
+    <tr><td><code>guidance</code></td><td>Turn-by-turn progress</td></tr>
+    <tr><td><code>lastError</code></td><td>The last loading error, for display</td></tr>
+  </tbody>
+</table>
+
+<p><code>featureTaps</code> is a stream of taps; <code>cameraReady</code> completes when the camera first framed the venue.</p>
+
+<h2>Change the options</h2>
+
+<p>Rebuild the widget with new <code>options</code>, or call <code>map.setOptions(...)</code>. Equal options are not sent again.</p>
+
+<h2>Next</h2>
+
+<ul>
+  <li><a href="{{root}}guides/route.html">Routes</a></li>
+  <li><a href="{{root}}concepts/platform-view.html">The platform view</a></li>
+</ul>

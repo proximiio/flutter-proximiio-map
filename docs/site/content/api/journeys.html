@@ -1,0 +1,55 @@
+<!--
+title: Journey types
+description: Journey, JourneyStop, JourneyRules, JourneyNavigator, JourneyState and the journey events.
+-->
+
+<h2>Plan</h2>
+
+<table>
+  <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>Journey</code></td><td><code>stops</code>; <code>toJson</code>, <code>fromJson</code>, <code>fromProximiioJourney</code></td></tr>
+    <tr><td><code>JourneyStop</code></td><td><code>id</code>, <code>title</code>, <code>coordinate</code>, <code>level</code>, <code>poiId</code>, <code>group</code>, <code>iconName</code>, <code>kind</code> (<code>planned</code>, <code>detour</code>), <code>state</code> (<code>pending</code>, <code>active</code>, <code>reached</code>, <code>done</code>, <code>skipped</code>)</td></tr>
+    <tr><td><code>JourneyRules</code></td><td><code>advanceOnDepartureMeters</code>, <code>rerouteCooldown</code>, <code>walkingSpeedMetersPerSecond</code>; <code>JourneyRules.venueVisit</code></td></tr>
+  </tbody>
+</table>
+
+<h2>JourneyNavigator</h2>
+
+<table>
+  <thead><tr><th>Member</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>state</code></td><td><code>ValueListenable&lt;JourneyState?&gt;</code></td></tr>
+    <tr><td><code>guidance</code></td><td><code>ValueListenable&lt;RouteGuidance?&gt;</code> of the active leg</td></tr>
+    <tr><td><code>events</code></td><td><code>Stream&lt;JourneyEvent&gt;</code></td></tr>
+    <tr><td><code>cues</code></td><td><code>Stream&lt;JourneyCue&gt;</code> (<code>kind</code>, <code>text</code>, <code>distanceMeters</code>)</td></tr>
+    <tr><td><code>advance</code>, <code>skip</code>, <code>skipStop</code>, <code>markDone</code>, <code>reopen</code>, <code>activate</code></td><td>Progress</td></tr>
+    <tr><td><code>detour</code>, <code>cancelDetour</code>, <code>resumeJourney</code></td><td>Detours</td></tr>
+    <tr><td><code>addStop</code>, <code>insertStop</code>, <code>removeStop</code>, <code>replaceStop</code>, <code>moveStop</code>, <code>update</code></td><td>Edit the plan</td></tr>
+    <tr><td><code>proposeOrder</code>, <code>replanFromHere</code>, <code>apply</code></td><td>Reorder (<code>JourneyOrderProposal</code>)</td></tr>
+    <tr><td><code>setRouteOptions</code>, <code>fitActiveLeg</code>, <code>fitJourney</code>, <code>end</code></td><td>Routing, camera, end</td></tr>
+  </tbody>
+</table>
+
+<h2>State</h2>
+
+<table>
+  <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>JourneyState</code></td><td><code>journey</code>, <code>overview</code>, <code>deviation</code>, <code>activeStopId</code>, <code>activeStop</code>, <code>detourStopId</code>, <code>hasArrived</code>, <code>isFinished</code>, <code>noRouteReasons</code></td></tr>
+    <tr><td><code>JourneyOverview</code></td><td><code>remainingStopIds</code>, <code>legs</code>, <code>remainingMeters</code>, <code>eta</code>, <code>activeLegRemainingMeters</code>, <code>activeLegEta</code>, <code>unmeasuredLegCount</code>, <code>unreachableStopIds</code></td></tr>
+    <tr><td><code>JourneyLeg</code></td><td><code>destinationStopId</code>, <code>originStopId</code>, <code>meters</code>, <code>isUnreachable</code>, <code>isActive</code>, <code>duration</code></td></tr>
+    <tr><td><code>JourneyDeviation</code></td><td><code>episode</code>, <code>since</code>, <code>distanceMeters</code>, <code>isOnRouteFloor</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Events</h2>
+
+<p>
+  <code>JourneyEvent</code> is sealed: <code>JourneyLeftRoute</code>, <code>JourneyFarFromRoute</code>,
+  <code>JourneyOffRouteTooLong</code>, <code>JourneyReturnedToRoute</code>, <code>JourneyDetourOverstayed</code>,
+  <code>JourneyDetourStarted</code>, <code>JourneyDetourEnded</code>, <code>JourneyStopReached</code>,
+  <code>JourneyStopPassed</code>, <code>JourneyStopSkipped</code>, <code>JourneyLegChanged</code> (with
+  <code>reason</code>), <code>JourneyRerouted</code>, <code>JourneyFinished</code>, and
+  <code>JourneyUnknownEvent</code> for events added after this release.
+</p>

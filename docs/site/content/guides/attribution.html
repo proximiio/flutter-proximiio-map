@@ -1,0 +1,32 @@
+<!--
+title: Attribution and licences
+description: Keep the map credits visible and ship the MapLibre licence notice.
+-->
+
+<p>
+  The map shows the credits of the map data by default. Keep them visible and include the MapLibre
+  BSD 2-Clause notice in the app's licences.
+</p>
+
+<h2>The controls</h2>
+
+<table>
+  <thead><tr><th><code>MapChrome</code></th><th>Default</th></tr></thead>
+  <tbody>
+    <tr><td><code>showsAttribution</code></td><td><code>true</code></td></tr>
+    <tr><td><code>showsLogo</code></td><td><code>false</code></td></tr>
+    <tr><td><code>showsCompass</code></td><td><code>false</code></td></tr>
+    <tr><td><code>allowsTilting</code></td><td><code>true</code></td></tr>
+  </tbody>
+</table>
+
+<div class="doc-aside doc-aside-caution"><p>
+  <code>MapChrome.bare</code> turns the credits off. Show them elsewhere in the app, for example in an
+  about screen, when you use it.
+</p></div>
+
+<p>A bottom sheet over the credits hides them: keep the space free with <code>MapContentInsets.safeAreaPlus</code> instead (see <a href="{{root}}guides/camera.html">Camera and insets</a>).</p>
+
+<h2>Licences</h2>
+
+<p>The app ships MapLibre under the BSD 2-Clause licence. Add its notice to the app's licence screen, for example through Flutter's <code>LicenseRegistry</code>.</p>

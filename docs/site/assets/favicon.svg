@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Proximi.io">
+  <!-- Proximi.io favicon: the teal location pin from the wordmark, on its own.
+       Mid-tone teal (#17AEBF) stays legible against both light and dark
+       browser-tab chrome, so no light/dark variant is needed. -->
+  <path fill="#17AEBF" d="M16 2.5c-5.247 0-9.5 4.253-9.5 9.5 0 6.9 8.34 16.44 8.695 16.842a1.07 1.07 0 0 0 1.61 0C17.16 28.44 25.5 18.9 25.5 12c0-5.247-4.253-9.5-9.5-9.5Zm0 14.1a4.6 4.6 0 1 1 0-9.2 4.6 4.6 0 0 1 0 9.2Z"/>
+</svg>

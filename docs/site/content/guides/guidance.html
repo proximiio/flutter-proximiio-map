@@ -1,0 +1,57 @@
+<!--
+title: Turn-by-turn guidance
+description: Follow the shown route with manoeuvres, distances, off-route detection and arrival.
+-->
+
+<p>
+  With guidance on, the map follows the visitor along the route from <code>showRoute</code> and
+  reports the next manoeuvre, the distance to it and the distance left.
+</p>
+
+<h2>Turn it on</h2>
+
+<pre><code class="language-dart">await map.showRoute(from: here, fromLevel: 0, to: goal, toLevel: 0);
+await map.setGuidanceRules(RouteFollowRules.venueWalk);
+
+ValueListenableBuilder(
+  valueListenable: map.guidance,
+  builder: (context, guidance, _) =&gt; Text(guidance?.text ?? ''),
+)</code></pre>
+
+<p><code>setGuidanceRules(null)</code> turns it off.</p>
+
+<h2>What guidance reports</h2>
+
+<table>
+  <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>manoeuvre</code>, <code>nextManoeuvre</code></td><td><code>RouteManoeuvre</code>: <code>kind</code> (<code>turnLeft</code>, <code>levelChange</code>, <code>arrive</code>, …), position, level</td></tr>
+    <tr><td><code>distanceToManoeuvreMeters</code></td><td>Distance to the next manoeuvre</td></tr>
+    <tr><td><code>remainingMeters</code>, <code>traveledMeters</code></td><td>Distance left and walked</td></tr>
+    <tr><td><code>isOffRoute</code>, <code>offRouteMeters</code></td><td>The visitor left the route</td></tr>
+    <tr><td><code>hasArrived</code>, <code>arrivalProgress</code></td><td>Arrival, and its confirmation from 0 to 1</td></tr>
+    <tr><td><code>text</code></td><td>The instruction as a sentence</td></tr>
+  </tbody>
+</table>
+
+<p><code>map.instructionText(destinationTitle: 'Gate B12')</code> returns the current sentence with the destination's name on arrival.</p>
+
+<h2>Text languages</h2>
+
+<p>Instruction text exists in English and Arabic. It follows <code>MapOptions.language</code>; other languages get English. Build your own text from <code>manoeuvre.kind</code> for other languages.</p>
+
+<h2>Rules</h2>
+
+<table>
+  <thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>arrivalRadiusMeters</code></td><td>from accuracy, 3–10 m</td><td>Distance that counts as arrived</td></tr>
+    <tr><td><code>arrivalDwell</code></td><td>2 s</td><td>Time within the radius before arrival</td></tr>
+    <tr><td><code>offRouteMeters</code></td><td>12 m</td><td>Distance from the route that counts as off route</td></tr>
+    <tr><td><code>offRouteFixes</code></td><td>3</td><td>Positions in a row beyond it</td></tr>
+  </tbody>
+</table>
+
+<h2>Off route</h2>
+
+<p>The map does not reroute by itself. When <code>isOffRoute</code> turns true, call <code>showRoute</code> again from the current position. Journeys reroute on their own; see <a href="{{root}}guides/journeys.html">Multi-stop journeys</a>.</p>

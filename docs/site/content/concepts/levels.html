@@ -1,0 +1,48 @@
+<!--
+title: Floors
+description: Floor levels, following the visitor's floor, pinning a floor, and building your own floor picker.
+-->
+
+<p>
+  The map shows one floor at a time. By default it shows the visitor's floor and follows it. When the
+  user or the app chooses a floor, that floor is pinned until the app follows the visitor again.
+</p>
+
+<h2>Levels</h2>
+
+<p>A floor is identified by its level, a <code>double</code>. Intermediate levels such as a 1.5 mezzanine are kept.</p>
+
+<h2>State</h2>
+
+<pre><code class="language-dart">map.floors.value          // List&lt;MapFloor&gt;: level and name
+map.selectedFloor.value   // MapFloorSelection: level shown, isPinned</code></pre>
+
+<p>A floor's name can arrive after its level; the list is updated when it does.</p>
+
+<h2>Pinning</h2>
+
+<pre><code class="language-dart">await map.selectFloor(2);    // show level 2, stop following the visitor's floor
+await map.followMyFloor();   // follow the visitor's floor again</code></pre>
+
+<h2>A floor picker</h2>
+
+<p>The built-in picker: <code>MapOptions(floorSelector: FloorSelectorPosition.trailing)</code>. Your own:</p>
+
+<pre><code class="language-dart">ValueListenableBuilder(
+  valueListenable: map.floors,
+  builder: (context, floors, _) =&gt; ValueListenableBuilder(
+    valueListenable: map.selectedFloor,
+    builder: (context, selected, _) =&gt; SegmentedButton&lt;double&gt;(
+      segments: [for (final f in floors) ButtonSegment(value: f.level, label: Text(f.name ?? '${f.level}'))],
+      selected: {selected.level},
+      onSelectionChanged: (levels) =&gt; map.selectFloor(levels.first),
+    ),
+  ),
+)</code></pre>
+
+<h2>Related documentation</h2>
+
+<ul>
+  <li><a href="{{root}}guides/position.html">The blue dot</a></li>
+  <li><a href="{{root}}guides/languages.html">Languages</a></li>
+</ul>

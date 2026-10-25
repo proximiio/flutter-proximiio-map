@@ -1,0 +1,33 @@
+<!--
+title: Migrating from 1.x
+description: Move from the 1.x WebView map to the native map of 6.0.
+-->
+
+<p>
+  Version 1.x showed the Proximi.io web map in a WebView and passed the token to the widget. Version 6.0
+  shows the native iOS and Android map in a platform view, on the SDK instance of
+  <code>flutter_proximiio</code>. There is no compatibility layer.
+</p>
+
+<table>
+  <thead><tr><th>1.x</th><th>6.0</th></tr></thead>
+  <tbody>
+    <tr><td><code>ProximiioMapWidget(token: ...)</code></td><td><code>Proximiio.create(...)</code>, then <code>ProximiioMap()</code></td></tr>
+    <tr><td><code>mapDefaults</code></td><td><code>MapOptions</code></td></tr>
+    <tr><td><code>onMapReady</code></td><td><code>onMapCreated</code>, <code>controller.cameraReady</code></td></tr>
+    <tr><td><code>onMapClick</code>, <code>onFeatureClick</code></td><td><code>controller.featureTaps</code></td></tr>
+    <tr><td><code>setCenter</code>, <code>flyTo</code></td><td><code>controller.setCenter(coordinate, zoom: ..., animated: ...)</code></td></tr>
+    <tr><td><code>setFloor(floorId)</code></td><td><code>controller.selectFloor(level)</code></td></tr>
+    <tr><td><code>setRoute(...)</code>, <code>clearRoute()</code></td><td><code>controller.showRoute(...)</code>, <code>controller.clearRoute()</code></td></tr>
+    <tr><td><code>setUserLocation(...)</code></td><td>Not needed: the map follows the SDK's positions. For a fixed position use <code>sdk.setCustomPosition</code>.</td></tr>
+  </tbody>
+</table>
+
+<h2>Steps</h2>
+
+<ol>
+  <li>Update both packages to the pair from <a href="{{root}}reference/versioning.html">Versioning and releases</a>, and follow the <code>flutter_proximiio</code> migration guide.</li>
+  <li>Remove <code>webview_flutter</code> if nothing else uses it.</li>
+  <li>On iOS, turn on Swift Package Manager (<a href="{{root}}getting-started/installation.html">Installation</a>).</li>
+  <li>Replace the widget and the calls with the table above.</li>
+</ol>

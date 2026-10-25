@@ -1,0 +1,24 @@
+<!--
+title: Geofence display
+description: Draw the venue's geofences on the map and style them.
+-->
+
+<pre><code class="language-dart">const MapOptions(
+  showsGeofences: true,
+  geofenceStyle: GeofenceStyle(fillColor: Color(0xFF38CFE0), fillOpacity: 0.16, lineColor: Color(0xFF1E9EB0)),
+);</code></pre>
+
+<p>
+  Geofences are drawn on their floor. Drawing them changes nothing about geofence events; those come
+  from the SDK's <code>geofenceEvents</code>.
+</p>
+
+<table>
+  <thead><tr><th>Property</th><th>Default</th></tr></thead>
+  <tbody>
+    <tr><td><code>fillColor</code></td><td><code>0xFF38CFE0</code></td></tr>
+    <tr><td><code>fillOpacity</code></td><td>0.16</td></tr>
+    <tr><td><code>lineColor</code></td><td><code>0xFF1E9EB0</code></td></tr>
+    <tr><td><code>lineWidth</code></td><td>2</td></tr>
+  </tbody>
+</table>

@@ -1,0 +1,52 @@
+<!--
+title: Camera and insets
+description: Move and frame the camera, follow the visitor, and keep space free for your UI.
+-->
+
+<h2>Move the camera</h2>
+
+<pre><code class="language-dart">await map.setCenter(const Coordinate(latitude: 24.4866, longitude: 54.6074), zoom: 19);
+await map.setZoom(18);
+await map.zoomBy(-1);
+await map.fitCoordinates([entrance, gate]);
+await map.showVenue();       // frame the whole venue
+await map.recentre();        // follow the visitor again</code></pre>
+
+<p>All of them animate unless <code>animated: false</code>.</p>
+
+<h2>Read it</h2>
+
+<pre><code class="language-dart">final camera = await map.cameraState();   // center, zoom, direction, mode</code></pre>
+
+<h2>Modes</h2>
+
+<table>
+  <thead><tr><th><code>CameraMode</code></th><th>Behaviour</th></tr></thead>
+  <tbody>
+    <tr><td><code>follow</code></td><td>Follows the dot (default)</td></tr>
+    <tr><td><code>followWithHeading</code></td><td>Follows and turns with the heading</td></tr>
+    <tr><td><code>free</code></td><td>Stays where it is</td></tr>
+  </tbody>
+</table>
+
+<p><code>map.cameraMode</code> holds the mode now. <code>recentre(zoom:)</code> uses <code>MapOptions.recentreZoom</code> (18.5) without a zoom.</p>
+
+<h2>Insets</h2>
+
+<p>Keep the camera's framing, the logo and the attribution clear of your UI, for example a bottom sheet:</p>
+
+<pre><code class="language-dart">MapOptions(contentInsets: MapContentInsets.safeAreaPlus(EdgeInsetsDirectional.only(bottom: sheetHeight)));</code></pre>
+
+<table>
+  <thead><tr><th><code>MapContentInsets</code></th><th>Space kept free</th></tr></thead>
+  <tbody>
+    <tr><td><code>safeArea()</code></td><td>The device safe area (default)</td></tr>
+    <tr><td><code>safeAreaPlus(insets)</code></td><td>The safe area plus <code>insets</code></td></tr>
+    <tr><td><code>fixed(insets)</code></td><td>Exactly <code>insets</code></td></tr>
+    <tr><td><code>none()</code></td><td>Nothing</td></tr>
+  </tbody>
+</table>
+
+<h2>First framing</h2>
+
+<p><code>initialFraming: InitialFraming.allFeatures</code> (default) frames all venue features; <code>legacyFirstFloor</code> frames the first floor. <code>map.cameraReady</code> completes after it.</p>

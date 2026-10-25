@@ -1,0 +1,29 @@
+<!--
+title: Offline
+description: How the map behaves without a connection, and how an offline package provides the style.
+-->
+
+<h2>A dropout</h2>
+
+<p>Nothing to configure. The style is stored on the first load and the SDK stores the venue features, so a running map keeps drawing without a connection. Positions do not depend on the network.</p>
+
+<h2>A start without a connection</h2>
+
+<p>
+  After one earlier run, the map draws the stored style and venue at once
+  (<code>styleSource</code> is <code>cache</code>). Without an earlier run there is no stored style; the
+  map opens the fallback style, which itself needs a connection, and shows only the dot.
+</p>
+
+<div class="doc-aside doc-aside-note"><p>
+  The SDK's <code>authenticate</code> needs a connection. Plan the app's offline start with the SDK's
+  Offline and sync guide.
+</p></div>
+
+<h2>An offline package</h2>
+
+<p>An installed offline package provides the style without any network access:</p>
+
+<pre><code class="language-dart">const MapOptions(offlinePackageId: 'terminal-1');</code></pre>
+
+<p>Install the package with the SDK (<code>syncOfflinePackage</code> or <code>installOfflineSeed</code>) first. Offline map tiles are not supported yet.</p>

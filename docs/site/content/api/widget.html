@@ -1,0 +1,30 @@
+<!--
+title: ProximiioMap
+description: The map widget — its parameters and lifecycle.
+-->
+
+<pre><code class="language-dart">const ProximiioMap({
+  Key? key,
+  MapOptions options = const MapOptions(),
+  void Function(ProximiioMapController controller)? onMapCreated,
+  Set&lt;Factory&lt;OneSequenceGestureRecognizer&gt;&gt;? gestureRecognizers,
+  Widget placeholder = const SizedBox.expand(),
+})</code></pre>
+
+<table>
+  <thead><tr><th>Parameter</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>options</code></td><td>How the map looks and behaves; a changed value updates the map</td></tr>
+    <tr><td><code>onMapCreated</code></td><td>Called once with the controller when the native map exists</td></tr>
+    <tr><td><code>gestureRecognizers</code></td><td>Gestures the map takes first; default all</td></tr>
+    <tr><td><code>placeholder</code></td><td>Shown until the platform view is created</td></tr>
+  </tbody>
+</table>
+
+<h2>Lifecycle</h2>
+
+<ul>
+  <li>Create the SDK with <code>Proximiio.create</code> before the widget is built.</li>
+  <li>The controller is valid until the widget is removed; then the native map is released and calls throw <code>MapErrorCode.notReady</code>.</li>
+  <li>iOS and Android only; other platforms show a message.</li>
+</ul>

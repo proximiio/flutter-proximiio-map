@@ -1,0 +1,55 @@
+<!--
+title: The platform view
+description: How the native map is embedded in Flutter, how gestures reach it, and how it follows the app lifecycle.
+-->
+
+<p>
+  <code>ProximiioMap</code> embeds the native map view of each platform: the iOS map view controller
+  and the Android map view. Flutter composes it with the widgets around it.
+</p>
+
+<h2>Creation</h2>
+
+<ol>
+  <li>The widget sends its <code>MapOptions</code> to the plugin and gets a handle.</li>
+  <li>It creates the platform view with that handle. The native side builds the map with the options and the process-wide SDK instance.</li>
+  <li><code>onMapCreated</code> receives the controller for that map.</li>
+</ol>
+
+<p>
+  Without an SDK instance (no <code>Proximiio.create</code> yet) the platform view shows a notice and
+  every controller call throws <code>MapErrorCode.notConfigured</code>.
+</p>
+
+<h2>Gestures</h2>
+
+<p>
+  By default the map takes every gesture, so panning and zooming work inside scroll views. Pass
+  <code>gestureRecognizers</code> to share gestures with the widgets around it.
+</p>
+
+<h2>Composition</h2>
+
+<table>
+  <thead><tr><th>Platform</th><th>How</th></tr></thead>
+  <tbody>
+    <tr><td>iOS</td><td>A UIKit platform view. The map's view controller joins the app's view controller hierarchy, which the map needs for safe areas.</td></tr>
+    <tr><td>Android</td><td>Texture-layer composition. The map renders to a <code>TextureView</code> while <code>MapOptions.backgroundColor</code> is not opaque (the default).</td></tr>
+  </tbody>
+</table>
+
+<div class="doc-aside doc-aside-note"><p>
+  On Android an opaque <code>backgroundColor</code> makes the map render to a <code>SurfaceView</code>,
+  which Flutter composes in a slower mode.
+</p></div>
+
+<h2>Lifecycle</h2>
+
+<p>
+  On Android the map follows the activity's lifecycle (pause, resume). On iOS it follows its view
+  controller. Removing the widget disposes the native map and ends a running journey.
+</p>
+
+<h2>Several maps</h2>
+
+<p>Each <code>ProximiioMap</code> has its own controller and native map. All of them show the same SDK instance.</p>

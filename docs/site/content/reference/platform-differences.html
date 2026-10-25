@@ -1,0 +1,16 @@
+<!--
+title: Platform differences
+description: Where the iOS and Android maps differ behind the same Dart API.
+-->
+
+<table>
+  <thead><tr><th>Area</th><th>iOS</th><th>Android</th></tr></thead>
+  <tbody>
+    <tr><td>Build</td><td>Swift Package Manager only; CocoaPods builds a notice</td><td>Gradle, <code>maven.eu.proximi.fi</code></td></tr>
+    <tr><td>Composition</td><td>UIKit platform view in the app's view-controller hierarchy</td><td>Texture layer; an opaque <code>backgroundColor</code> switches to a <code>SurfaceView</code></td></tr>
+    <tr><td>MapLibre</td><td>Pinned exactly at 6.29.0</td><td>13.5.0 or newer</td></tr>
+    <tr><td>Lifecycle</td><td>Follows its view controller</td><td>Follows the activity</td></tr>
+  </tbody>
+</table>
+
+<p>Map behaviour (style, floors, routes, guidance, journeys) is the same: the Android map is a port of the iOS map, which is the reference.</p>

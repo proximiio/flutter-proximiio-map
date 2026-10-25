@@ -1,0 +1,53 @@
+<!--
+title: Routes
+description: Compute and show a route on the map, style it, and remove it.
+-->
+
+<p>
+  <code>showRoute</code> computes the route with the SDK and draws it. It returns the same
+  <code>ComputedRoute</code> as <code>Proximiio.computeRoute</code>.
+</p>
+
+<h2>Prerequisites</h2>
+
+<p>The SDK's route network is installed: <code>await sdk.loadRouteNetwork()</code> after <code>authenticate</code> (see the SDK's Wayfinding guide).</p>
+
+<h2>Show a route</h2>
+
+<pre><code class="language-dart">final position = await sdk.lastPosition();
+final route = await map.showRoute(
+  from: position!.coordinate,
+  fromLevel: position.floor?.level ?? 0,
+  to: gate.coordinate,
+  toLevel: 2,
+  options: const RouteOptions(profile: RouteProfile.wheelchair),
+);
+print('${route.distanceMeters.round()} m, ${route.duration.inMinutes} min');</code></pre>
+
+<p>
+  When no route exists, <code>showRoute</code> throws <code>ProximiioException</code> with
+  <code>ProximiioErrorCode.noRoute</code> and a <code>noRouteReason</code>, as
+  <code>computeRoute</code> does. The previous route stays on the map.
+</p>
+
+<h2>Remove it</h2>
+
+<pre><code class="language-dart">await map.clearRoute();</code></pre>
+
+<h2>Style</h2>
+
+<pre><code class="language-dart">const MapOptions(
+  routeLineStyle: RouteLineStyle(color: Color(0xFF3F69FF), toColor: Color(0xFFED3731), width: 8),
+  routeMarkers: RouteMarkerStyle(color: Color(0xFF3F69FF)),
+);</code></pre>
+
+<p>
+  The walked part is drawn in <code>completedColor</code> while guidance runs.
+  <code>MapOptions(showsRoute: false)</code> hides routes and journey legs.
+</p>
+
+<h2>Next</h2>
+
+<ul>
+  <li><a href="{{root}}guides/guidance.html">Turn-by-turn guidance</a></li>
+</ul>
