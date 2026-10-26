@@ -26,67 +26,60 @@ MapMsgOptions toMsgOptions(MapOptions o) {
       _ => MapMsgTrailKind.off,
     },
     trailValue: o.trail.kind == 0 ? null : o.trail.value.toDouble(),
-    features:
-        o.features.toggles != null
-            ? MapMsgFeaturesKind.only
-            : (o.features.isNone ? MapMsgFeaturesKind.none : MapMsgFeaturesKind.venueDefaults),
-    layerToggles:
-        o.features.toggles == null
-            ? null
-            : MapMsgLayerToggles(
-              paths: o.features.toggles!.paths,
-              walls: o.features.toggles!.walls,
-              shops: o.features.toggles!.shops,
-              pois: o.features.toggles!.pois,
-              amenities: o.features.toggles!.amenities,
-              baseTiles: o.features.toggles!.baseTiles,
-            ),
+    features: o.features.toggles != null
+        ? MapMsgFeaturesKind.only
+        : (o.features.isNone ? MapMsgFeaturesKind.none : MapMsgFeaturesKind.venueDefaults),
+    layerToggles: o.features.toggles == null
+        ? null
+        : MapMsgLayerToggles(
+            paths: o.features.toggles!.paths,
+            walls: o.features.toggles!.walls,
+            shops: o.features.toggles!.shops,
+            pois: o.features.toggles!.pois,
+            amenities: o.features.toggles!.amenities,
+            baseTiles: o.features.toggles!.baseTiles,
+          ),
     showsRoute: o.showsRoute,
     showsGeofences: o.showsGeofences,
     insets: MapMsgInsetsKind.values[o.contentInsets.kind],
-    insetValues:
-        o.contentInsets.kind >= 2
-            ? MapMsgEdgeInsets(top: insets.top, leading: insets.start, bottom: insets.bottom, trailing: insets.end)
-            : null,
+    insetValues: o.contentInsets.kind >= 2
+        ? MapMsgEdgeInsets(top: insets.top, leading: insets.start, bottom: insets.bottom, trailing: insets.end)
+        : null,
     amenities: o.amenities,
     fallbackStyleUrl: o.fallbackStyleUrl?.toString(),
     recentreZoom: o.recentreZoom,
     offlinePackageId: o.offlinePackageId,
-    chrome:
-        o.chrome == null
-            ? null
-            : MapMsgChrome(
-              showsLogo: o.chrome!.showsLogo,
-              showsCompass: o.chrome!.showsCompass,
-              showsAttribution: o.chrome!.showsAttribution,
-              allowsTilting: o.chrome!.allowsTilting,
-            ),
-    routeLineStyle:
-        o.routeLineStyle == null
-            ? null
-            : MapMsgRouteLineStyle(
-              color: _argb(o.routeLineStyle!.color),
-              toColor: o.routeLineStyle!.toColor == null ? null : _argb(o.routeLineStyle!.toColor!),
-              completedColor: _argb(o.routeLineStyle!.completedColor),
-              width: o.routeLineStyle!.width,
-            ),
-    routeMarkers:
-        o.routeMarkers == null
-            ? null
-            : MapMsgRouteMarkerStyle(
-              isVisible: o.routeMarkers!.isVisible,
-              color: _argb(o.routeMarkers!.color),
-              completedColor: _argb(o.routeMarkers!.completedColor),
-            ),
-    geofenceStyle:
-        o.geofenceStyle == null
-            ? null
-            : MapMsgGeofenceStyle(
-              fillColor: _argb(o.geofenceStyle!.fillColor),
-              fillOpacity: o.geofenceStyle!.fillOpacity,
-              lineColor: _argb(o.geofenceStyle!.lineColor),
-              lineWidth: o.geofenceStyle!.lineWidth,
-            ),
+    chrome: o.chrome == null
+        ? null
+        : MapMsgChrome(
+            showsLogo: o.chrome!.showsLogo,
+            showsCompass: o.chrome!.showsCompass,
+            showsAttribution: o.chrome!.showsAttribution,
+            allowsTilting: o.chrome!.allowsTilting,
+          ),
+    routeLineStyle: o.routeLineStyle == null
+        ? null
+        : MapMsgRouteLineStyle(
+            color: _argb(o.routeLineStyle!.color),
+            toColor: o.routeLineStyle!.toColor == null ? null : _argb(o.routeLineStyle!.toColor!),
+            completedColor: _argb(o.routeLineStyle!.completedColor),
+            width: o.routeLineStyle!.width,
+          ),
+    routeMarkers: o.routeMarkers == null
+        ? null
+        : MapMsgRouteMarkerStyle(
+            isVisible: o.routeMarkers!.isVisible,
+            color: _argb(o.routeMarkers!.color),
+            completedColor: _argb(o.routeMarkers!.completedColor),
+          ),
+    geofenceStyle: o.geofenceStyle == null
+        ? null
+        : MapMsgGeofenceStyle(
+            fillColor: _argb(o.geofenceStyle!.fillColor),
+            fillOpacity: o.geofenceStyle!.fillOpacity,
+            lineColor: _argb(o.geofenceStyle!.lineColor),
+            lineWidth: o.geofenceStyle!.lineWidth,
+          ),
     initialFraming: MapMsgInitialFraming.values.byName(o.initialFraming.name),
     language: o.language,
     heading: MapMsgHeadingMode.values.byName(o.heading.name),
@@ -228,15 +221,14 @@ JourneyState fromMsgJourneyState(MapMsgJourneyState s) => JourneyState(
     unmeasuredLegCount: s.overview.unmeasuredLegCount,
     unreachableStopIds: s.overview.unreachableStopIds,
   ),
-  deviation:
-      s.deviation == null
-          ? null
-          : JourneyDeviation(
-            episode: s.deviation!.episode,
-            since: DateTime.fromMillisecondsSinceEpoch(s.deviation!.sinceMs, isUtc: true),
-            distanceMeters: s.deviation!.distanceMeters,
-            isOnRouteFloor: s.deviation!.isOnRouteFloor,
-          ),
+  deviation: s.deviation == null
+      ? null
+      : JourneyDeviation(
+          episode: s.deviation!.episode,
+          since: DateTime.fromMillisecondsSinceEpoch(s.deviation!.sinceMs, isUtc: true),
+          distanceMeters: s.deviation!.distanceMeters,
+          isOnRouteFloor: s.deviation!.isOnRouteFloor,
+        ),
   activeStopId: s.activeStopId,
   detourStopId: s.detourStopId,
   hasArrived: s.hasArrived,

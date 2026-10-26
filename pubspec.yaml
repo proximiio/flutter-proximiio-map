@@ -1,13 +1,13 @@
 name: flutter_proximiio_map
 description: Proximi.io venue map for Flutter, a platform view over the native Proximi.io Map v6 libraries for iOS and Android.
-version: 6.0.0-beta.1
+version: 6.0.0-beta.2
 homepage: https://github.com/proximiio/flutter-proximiio-map
 # Distributed from git tags, not pub.dev.
 publish_to: none
 
 environment:
-  sdk: ^3.7.0
-  flutter: ">=3.29.0"
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:
@@ -17,7 +17,7 @@ dependencies:
   flutter_proximiio:
     git:
       url: https://github.com/proximiio/flutter-proximiio
-      ref: 6.0.0-beta.1
+      ref: 6.0.0-beta.2
 
 dev_dependencies:
   flutter_test:

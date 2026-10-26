@@ -247,7 +247,14 @@ void main() {
       final subscription = controller.featureTaps.listen(taps.add);
 
       events
-        ..add(MapMsgFloorsChanged(floors: [MapMsgFloor(level: 0, name: 'Ground'), MapMsgFloor(level: 1)]))
+        ..add(
+          MapMsgFloorsChanged(
+            floors: [
+              MapMsgFloor(level: 0, name: 'Ground'),
+              MapMsgFloor(level: 1),
+            ],
+          ),
+        )
         ..add(MapMsgSelectedFloorChanged(level: 1, isPinned: true))
         ..add(MapMsgCameraModeChanged(mode: MapMsgCameraMode.free))
         ..add(MapMsgStyleSourceChanged(kind: MapMsgStyleSourceKind.organization))

@@ -326,10 +326,7 @@ class JourneyState with ValueEquality {
   /// index into this list, not into `journey.stops`.
   List<JourneyStop> get reorderableStops {
     final byId = {for (final stop in journey.stops) stop.id: stop};
-    return [
-      for (final id in reorderableStopIds)
-        if (byId[id] case final stop?) stop,
-    ];
+    return [for (final id in reorderableStopIds) ?byId[id]];
   }
 
   /// The active stop.

@@ -10,12 +10,13 @@ Each release pins exact native versions; they are built and tested together.
 
 | flutter_proximiio_map | flutter_proximiio | iOS Map (`ProximiioMap`) | Android Map (`io.proximi.map:proximiio-map-live`) |
 |---|---|---|---|
+| 6.0.0-beta.2 | 6.0.0-beta.2 | 6.0.0-beta.51 | 6.0.0-beta.27 |
 | 6.0.0-beta.1 | 6.0.0-beta.1 | 6.0.0-beta.51 | 6.0.0-beta.27 |
 
 ## Requirements
 
-The requirements of `flutter_proximiio` apply (Flutter 3.29, iOS 15, Android minSdk 26 / compileSdk 37,
-Kotlin 2.2). On iOS the map needs Flutter's Swift Package Manager support.
+The requirements of `flutter_proximiio` apply (Flutter 3.44, iOS 15, Android minSdk 26 / compileSdk 37,
+Android Gradle Plugin 8.13). On iOS the map needs Flutter's Swift Package Manager support.
 
 ## Installation
 
@@ -24,11 +25,11 @@ dependencies:
   flutter_proximiio:
     git:
       url: https://github.com/proximiio/flutter-proximiio
-      ref: 6.0.0-beta.1
+      ref: 6.0.0-beta.2
   flutter_proximiio_map:
     git:
       url: https://github.com/proximiio/flutter-proximiio-map
-      ref: 6.0.0-beta.1
+      ref: 6.0.0-beta.2
 ```
 
 Set up `flutter_proximiio` first (repositories, `Info.plist` keys, Android build settings).
@@ -97,7 +98,8 @@ cp env.example.json env.json   # put your application token in env.json (gitigno
 flutter run --dart-define-from-file=env.json
 ```
 
-The example uses Swift Package Manager and the UIScene lifecycle on iOS (Flutter 3.38 or newer). Clone the
+The example uses Swift Package Manager and the UIScene lifecycle on iOS and built-in Kotlin on Android
+(Flutter 3.47 or newer). Clone the
 repository into a directory named `flutter_proximiio_map`:
 
 ```sh
