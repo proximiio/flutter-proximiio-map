@@ -5,7 +5,8 @@ description: How the map shows the visitor's position, heading, trail and privac
 
 <p>
   The map draws the position of the SDK instance itself: a dot, an accuracy ring and a heading beam.
-  No Dart code feeds it; start the SDK and the dot appears.
+  No Dart code feeds it. The dot appears after <code>sdk.requestPermissions()</code> grants location and
+  <code>sdk.start()</code> runs.
 </p>
 
 <h2>Heading</h2>
@@ -38,9 +39,10 @@ description: How the map shows the visitor's position, heading, trail and privac
 <h2>Privacy zones</h2>
 
 <p>
-  Inside a privacy zone the dot is drawn grey instead of hidden, so the visitor still sees the map
-  is working. To withhold positions entirely, set <code>withholdsPositionsInPrivacyZones</code> in the
-  SDK configuration.
+  Inside a privacy zone the dot stays on the last fix from before the zone, in grey, without the
+  heading beam. Guidance and journeys take no positions there.
+  <code>ProximiioConfiguration.withholdsPositionsInPrivacyZones</code> (default <code>true</code>) also
+  withholds them from <code>sdk.positions</code> and <code>sdk.lastPosition()</code>.
 </p>
 
 <h2>Related documentation</h2>

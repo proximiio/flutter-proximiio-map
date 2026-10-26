@@ -67,7 +67,8 @@ ProximiioMap(
   options: const MapOptions(floorSelector: FloorSelectorPosition.trailing),
   onMapCreated: (map) async {
     await map.cameraReady;
-    final here = (await sdk.lastPosition())!;
+    final here = await sdk.lastPosition(); // null before the first fix and inside privacy zones
+    if (here == null) return;
     final route = await map.showRoute(
       from: here.coordinate,
       fromLevel: here.floor?.level ?? 0,

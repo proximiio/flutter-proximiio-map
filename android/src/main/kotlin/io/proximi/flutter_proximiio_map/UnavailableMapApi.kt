@@ -1,8 +1,11 @@
 // Generated from MapMessages.g.kt by tool/generate_unavailable_api.py; do not edit.
 package io.proximi.flutter_proximiio_map
 
-/** Answers every map call with one error (no SDK instance, or no options). */
-internal class UnavailableMapApi(private val error: MapFlutterError) : MapHostApi {
+/**
+ * Answers every map call with one error (no SDK instance, or no options). `dispose()` succeeds and
+ * runs [onDispose], so the notice can release its channels.
+ */
+internal class UnavailableMapApi(private val error: MapFlutterError, private val onDispose: () -> Unit) : MapHostApi {
   override fun setOptions(options: MapMsgOptions) = throw error
   override fun cameraState(): MapMsgCameraState = throw error
   override fun setCenter(center: MapMsgCoordinate, zoom: Double?, animated: Boolean) = throw error
@@ -46,5 +49,7 @@ internal class UnavailableMapApi(private val error: MapFlutterError) : MapHostAp
   override fun setJourneyRouteOptions(options: MapMsgRouteOptions, callback: (Result<Unit>) -> Unit) = callback(Result.failure(error))
   override fun fitActiveLeg(animated: Boolean) = throw error
   override fun fitJourney(animated: Boolean) = throw error
-  override fun dispose() = throw error
+  override fun restartSession() = throw error
+  override fun journeyRouteNetworkChanged(callback: (Result<Unit>) -> Unit) = callback(Result.failure(error))
+  override fun dispose() = onDispose()
 }

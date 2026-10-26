@@ -241,6 +241,7 @@ JourneyState fromMsgJourneyState(MapMsgJourneyState s) => JourneyState(
   detourStopId: s.detourStopId,
   hasArrived: s.hasArrived,
   isFinished: s.isFinished,
+  reorderableStopIds: s.reorderableStopIds,
   noRouteReasons: {
     for (final entry in s.noRouteStopIds.entries) entry.key: NoRouteReason.values.asNameMap()[entry.value],
   },

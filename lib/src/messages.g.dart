@@ -1574,6 +1574,7 @@ class MapMsgJourneyState {
     required this.hasArrived,
     required this.isFinished,
     required this.noRouteStopIds,
+    required this.reorderableStopIds,
   });
 
   MapMsgJourney journey;
@@ -1593,8 +1594,22 @@ class MapMsgJourneyState {
   /// Stops no route leads to, with the SDK's `NoRouteReason` name.
   Map<String, String> noRouteStopIds;
 
+  /// Ids of the stops a reorder may touch, in walking order: the index space of `moveStop` and
+  /// `insertStop`.
+  List<String> reorderableStopIds;
+
   List<Object?> _toList() {
-    return <Object?>[journey, overview, deviation, activeStopId, detourStopId, hasArrived, isFinished, noRouteStopIds];
+    return <Object?>[
+      journey,
+      overview,
+      deviation,
+      activeStopId,
+      detourStopId,
+      hasArrived,
+      isFinished,
+      noRouteStopIds,
+      reorderableStopIds,
+    ];
   }
 
   Object encode() {
@@ -1612,6 +1627,7 @@ class MapMsgJourneyState {
       hasArrived: result[5]! as bool,
       isFinished: result[6]! as bool,
       noRouteStopIds: (result[7]! as Map<Object?, Object?>).cast<String, String>(),
+      reorderableStopIds: (result[8]! as List<Object?>).cast<String>(),
     );
   }
 
@@ -1631,7 +1647,8 @@ class MapMsgJourneyState {
         _deepEquals(detourStopId, other.detourStopId) &&
         _deepEquals(hasArrived, other.hasArrived) &&
         _deepEquals(isFinished, other.isFinished) &&
-        _deepEquals(noRouteStopIds, other.noRouteStopIds);
+        _deepEquals(noRouteStopIds, other.noRouteStopIds) &&
+        _deepEquals(reorderableStopIds, other.reorderableStopIds);
   }
 
   @override
@@ -2525,8 +2542,9 @@ class MapRegistryApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  /// Stores [options] and returns the handle to pass to the platform view.
-  Future<int> prepare(MapMsgOptions options) async {
+  /// Stores [options] and returns the handle to pass to the platform view. [isolateToken] is
+  /// random per Dart isolate: a new token (after a hot restart) releases the maps of the old one.
+  Future<int> prepare(MapMsgOptions options, String isolateToken) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.flutter_proximiio_map.MapRegistryApi.prepare$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -2534,7 +2552,7 @@ class MapRegistryApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[options, isolateToken]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
@@ -2544,13 +2562,29 @@ class MapRegistryApi {
     );
     return pigeonVar_replyValue! as int;
   }
+
+  /// Releases the map with [handle], also one whose platform view was never created. Releasing an
+  /// unknown or released handle does nothing.
+  Future<void> release(int handle) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.flutter_proximiio_map.MapRegistryApi.release$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[handle]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
+  }
 }
 
 /// One map, addressed by its handle as the channel suffix.
 ///
 /// Errors: `notConfigured` (no SDK instance: call `Proximiio.create` first), `notReady` (the view
 /// is gone), `noJourney`, `unknownProposal`, `invalidArgument`, `noRoute` (details as in
-/// flutter_proximiio), `unsupported`.
+/// flutter_proximiio), `superseded` (a later route call replaced this one), `unsupported`.
 class MapHostApi {
   /// Constructor for [MapHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
@@ -3269,6 +3303,37 @@ class MapHostApi {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[animated]);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
+  }
+
+  /// Takes the SDK streams again after the SDK was stopped and started. Sets the map's error when
+  /// `Proximiio.create` replaced the instance the map shows.
+  Future<void> restartSession() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.restartSession$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
+  }
+
+  /// The route network changed (the SDK reported new features): routes the journey again.
+  Future<void> journeyRouteNetworkChanged() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.journeyRouteNetworkChanged$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);

@@ -61,7 +61,20 @@ class _VenueMapPageState extends State&lt;VenueMapPage&gt; {
 
 <h2>Change the options</h2>
 
-<p>Rebuild the widget with new <code>options</code>, or call <code>map.setOptions(...)</code>. Equal options are not sent again.</p>
+<p>
+  Rebuild the widget with new <code>options</code>, or call <code>map.setOptions(...)</code>; use one of
+  the two for a map. A rebuild with options equal to the ones the map has sends nothing, and options
+  set before the platform view exists are sent when it is created. <code>setOptions</code> always sends.
+  <code>offlinePackageId</code> and <code>initialFraming</code> apply only to a new map.
+</p>
+
+<h2>When the SDK restarts</h2>
+
+<p>
+  The map follows <code>sdk.stop()</code> and <code>sdk.start()</code> of its SDK instance by itself.
+  After <code>Proximiio.create</code> replaced the instance, <code>lastError</code> asks for a new map:
+  rebuild the widget with a new <code>Key</code>.
+</p>
 
 <h2>Next</h2>
 

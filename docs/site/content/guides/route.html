@@ -15,8 +15,9 @@ description: Compute and show a route on the map, style it, and remove it.
 <h2>Show a route</h2>
 
 <pre><code class="language-dart">final position = await sdk.lastPosition();
+if (position == null) return; // no fix yet, or inside a privacy zone
 final route = await map.showRoute(
-  from: position!.coordinate,
+  from: position.coordinate,
   fromLevel: position.floor?.level ?? 0,
   to: gate.coordinate,
   toLevel: 2,
@@ -27,7 +28,9 @@ print('${route.distanceMeters.round()} m, ${route.duration.inMinutes} min');</co
 <p>
   When no route exists, <code>showRoute</code> throws <code>ProximiioException</code> with
   <code>ProximiioErrorCode.noRoute</code> and a <code>noRouteReason</code>, as
-  <code>computeRoute</code> does. The previous route stays on the map.
+  <code>computeRoute</code> does. The previous route stays on the map. A <code>showRoute</code> still
+  computing when <code>showRoute</code>, <code>clearRoute</code> or <code>startJourney</code> is called again
+  draws nothing and throws <code>MapErrorCode.superseded</code>.
 </p>
 
 <h2>Remove it</h2>
@@ -38,8 +41,10 @@ print('${route.distanceMeters.round()} m, ${route.duration.inMinutes} min');</co
 
 <pre><code class="language-dart">const MapOptions(
   routeLineStyle: RouteLineStyle(color: Color(0xFF3F69FF), toColor: Color(0xFFED3731), width: 8),
-  routeMarkers: RouteMarkerStyle(color: Color(0xFF3F69FF)),
+  routeMarkers: RouteMarkerStyle(color: Color(0xFF3F69FF)), // the pins at floor changes
 );</code></pre>
+
+<p>Without <code>routeLineStyle</code> the route is drawn as the organisation style says; a <code>RouteLineStyle</code> replaces that line.</p>
 
 <p>
   The walked part is drawn in <code>completedColor</code> while guidance runs.

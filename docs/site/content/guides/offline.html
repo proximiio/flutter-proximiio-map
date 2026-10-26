@@ -5,7 +5,7 @@ description: How the map behaves without a connection, and how an offline packag
 
 <h2>A dropout</h2>
 
-<p>Nothing to configure. The style is stored on the first load and the SDK stores the venue features, so a running map keeps drawing without a connection. Positions do not depend on the network.</p>
+<p>Nothing to configure. The style is stored on the first load and the SDK stores the venue features, so a running map keeps drawing without a connection. Positions computed on the phone (BLE, phone-native UWB) do not need a connection; venue-side positions (BlueIoT AoA, BlueIoT UWB) arrive through the relay and stop without one.</p>
 
 <h2>A start without a connection</h2>
 
@@ -26,4 +26,14 @@ description: How the map behaves without a connection, and how an offline packag
 
 <pre><code class="language-dart">const MapOptions(offlinePackageId: 'terminal-1');</code></pre>
 
-<p>Install the package with the SDK (<code>syncOfflinePackage</code> or <code>installOfflineSeed</code>) first. Offline map tiles are not supported yet.</p>
+<p>
+  Install the package from a bundled seed with the SDK's <code>installOfflineSeed</code> first;
+  <code>syncOfflinePackage</code> cannot fill a package in this release. Offline map tiles are not
+  supported yet.
+</p>
+
+<p>
+  <code>offlinePackageId</code> is read when the map starts. When the package cannot be read,
+  <code>lastError</code> says so and the map loads the style from the API; <code>styleSource</code> is
+  <code>offlinePackage</code> only while the package style is shown.
+</p>

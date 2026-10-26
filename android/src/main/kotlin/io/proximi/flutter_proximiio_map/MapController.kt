@@ -5,7 +5,6 @@ import android.view.View
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
-import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.platform.PlatformView
 import io.proximi.map.core.FloorKey
 import io.proximi.map.core.HeadingAim
@@ -63,15 +62,18 @@ internal class JourneyEventsRelay : JourneyEventsStreamHandler() {
  *
  * The view follows the activity lifecycle through a view-tree owner set before it is attached
  * (a plain FlutterActivity provides none). The host owns the session, so dispose closes it.
+ *
+ * Every asynchronous call replies, also when the map is disposed while it runs (`notReady`).
  */
 internal class MapController(
   context: Context,
   private val handle: Long,
   options: MapOptions,
   sdk: Proximiio,
-  private val messenger: BinaryMessenger,
+  private val registry: MapRegistry,
   lifecycle: Lifecycle?,
 ) : PlatformView, MapHostApi {
+  private val messenger = registry.messenger
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
   private val session = ProximiioMapSession(sdk, context, options)
   private val mapView = ProximiioMapView(context, session)
@@ -83,6 +85,11 @@ internal class MapController(
   private var nextProposalId = 1L
   private var disposed = false
 
+  /** The rules the app set; a journey's end clears the session's, so they are put back. */
+  private var guidanceRules: RouteFollowRules? = null
+
+  /** Bumped by every route call, so a route that finishes computing after a newer call is not drawn. */
+  private var routeGeneration = 0
   init {
     if (lifecycle != null) {
       mapView.setViewTreeLifecycleOwner(object : LifecycleOwner {
@@ -125,6 +132,21 @@ internal class MapController(
   }
 
   private fun <T> collect(flow: Flow<T>, action: (T) -> Unit): Job = scope.launch { flow.collect { action(it) } }
+
+  /** Runs [body] and replies with its result; a call cut short by dispose replies `notReady`. */
+  private fun <T> reply(callback: (Result<T>) -> Unit, body: suspend () -> T) {
+    scope.launch {
+      val result = try {
+        Result.success(body())
+      } catch (error: CancellationException) {
+        callback(Result.failure(MapFlutterError("notReady", "The map was disposed.")))
+        throw error
+      } catch (error: Throwable) {
+        Result.failure(flutterError(error))
+      }
+      callback(result)
+    }
+  }
 
   private fun observeSession() {
     collect(session.floors) { floors -> send(MapMsgFloorsChanged(floors = floors.map(MapMappers::floor))) }
@@ -211,33 +233,32 @@ internal class MapController(
       callback(Result.failure(MapFlutterError("notConfigured", "The map has no SDK instance.")))
       return
     }
-    scope.launch {
-      val result = try {
-        // The Android router is synchronous; it runs off the main thread.
-        val route = withContext(Dispatchers.Default) {
-          sdk.computeRoute(
-            from = ProximiioCoordinate(from.latitude, from.longitude),
-            fromLevel = fromLevel,
-            to = ProximiioCoordinate(to.latitude, to.longitude),
-            toLevel = toLevel,
-            options = MapMappers.routeOptions(options),
-          )
-        }
-        session.setRoute(route)
-        Result.success(MapMappers.route(route))
-      } catch (error: CancellationException) {
-        throw error
-      } catch (error: Throwable) {
-        Result.failure(flutterError(error))
+    val generation = ++routeGeneration
+    reply(callback) {
+      // The Android router is synchronous; it runs off the main thread.
+      val route = withContext(Dispatchers.Default) {
+        sdk.computeRoute(
+          from = ProximiioCoordinate(from.latitude, from.longitude),
+          fromLevel = fromLevel,
+          to = ProximiioCoordinate(to.latitude, to.longitude),
+          toLevel = toLevel,
+          options = MapMappers.routeOptions(options),
+        )
       }
-      callback(result)
+      if (generation != routeGeneration) throw superseded()
+      session.setRoute(route)
+      MapMappers.route(route)
     }
   }
 
-  override fun clearRoute() = session.clearRoute()
+  override fun clearRoute() {
+    routeGeneration++
+    session.clearRoute()
+  }
 
   override fun setGuidanceRules(rules: MapMsgFollowRules?) {
-    session.guidanceRules = rules?.let(MapMappers::followRules)
+    guidanceRules = rules?.let(MapMappers::followRules)
+    session.guidanceRules = guidanceRules
   }
 
   override fun instructionText(destinationTitle: String?): String? = session.instructionText(destinationTitle)
@@ -249,18 +270,8 @@ internal class MapController(
   private fun requireNavigator(): JourneyNavigator =
     navigator ?: throw MapFlutterError("noJourney", "No journey is running.")
 
-  private fun <T> runJourney(callback: (Result<T>) -> Unit, body: suspend (JourneyNavigator) -> T) {
-    scope.launch {
-      val result = try {
-        Result.success(body(requireNavigator()))
-      } catch (error: CancellationException) {
-        throw error
-      } catch (error: Throwable) {
-        Result.failure(flutterError(error))
-      }
-      callback(result)
-    }
-  }
+  private fun <T> runJourney(callback: (Result<T>) -> Unit, body: suspend (JourneyNavigator) -> T) =
+    reply(callback) { body(requireNavigator()) }
 
   override fun startJourney(
     journey: MapMsgJourney,
@@ -269,12 +280,14 @@ internal class MapController(
     callback: (Result<Unit>) -> Unit,
   ) {
     endNavigator()
+    // The journey draws its own legs; a route still computing must not replace them.
+    routeGeneration++
     val navigator = try {
       JourneyNavigator(
         session = session,
         journey = MapMappers.journey(journey),
         rules = MapMappers.rules(rules),
-        guidanceRules = session.guidanceRules ?: RouteFollowRules.VENUE_WALK,
+        guidanceRules = guidanceRules ?: RouteFollowRules.VENUE_WALK,
       )
     } catch (error: Throwable) {
       callback(Result.failure(flutterError(error)))
@@ -282,17 +295,9 @@ internal class MapController(
     }
     this.navigator = navigator
     observe(navigator)
-    scope.launch {
-      val result = try {
-        navigator.setRouteOptions(MapMappers.routeOptions(routeOptions))
-        navigator.start()
-        Result.success(Unit)
-      } catch (error: CancellationException) {
-        throw error
-      } catch (error: Throwable) {
-        Result.failure(flutterError(error))
-      }
-      callback(result)
+    reply(callback) {
+      navigator.setRouteOptions(MapMappers.routeOptions(routeOptions))
+      navigator.start()
     }
   }
 
@@ -330,6 +335,7 @@ internal class MapController(
     hasArrived = navigator.hasArrived,
     isFinished = navigator.isFinished,
     noRouteStopIds = navigator.noRouteReasons.value.mapValues { MapMappers.caseName(it.value) },
+    reorderableStopIds = navigator.reorderableStops.map { it.id },
   )
 
   private fun sendJourneyState() {
@@ -341,6 +347,8 @@ internal class MapController(
     navigator?.let {
       it.onCue = null
       it.end()
+      // end() clears the session's rules; the app's rules apply to routes again.
+      session.guidanceRules = guidanceRules
     }
     navigator = null
     navigatorJobs.forEach { it.cancel() }
@@ -389,10 +397,11 @@ internal class MapController(
   override fun updateJourney(journey: MapMsgJourney, callback: (Result<Boolean>) -> Unit) =
     runJourney(callback) { it.update(MapMappers.journey(journey)) }
 
-  private fun keep(proposal: JourneyOrderProposal?): MapMsgProposal? {
+  /** A proposal Dart can apply by id; one already applied ([applicable] false) is not kept. */
+  private fun keep(proposal: JourneyOrderProposal?, applicable: Boolean = true): MapMsgProposal? {
     proposal ?: return null
     val id = nextProposalId++
-    proposals[id] = proposal
+    if (applicable) proposals[id] = proposal
     return MapMsgProposal(
       id = id,
       order = proposal.order,
@@ -422,10 +431,13 @@ internal class MapController(
   override fun resumeJourney(callback: (Result<Unit>) -> Unit) = runJourney(callback) { it.resumeJourney() }
 
   override fun replanFromHere(pinnedStopIds: List<String>, callback: (Result<MapMsgProposal?>) -> Unit) =
-    runJourney(callback) { keep(it.replanFromHere(pinnedStopIds.toSet())) }
+    runJourney(callback) { keep(it.replanFromHere(pinnedStopIds.toSet()), applicable = false) }
 
   override fun setJourneyRouteOptions(options: MapMsgRouteOptions, callback: (Result<Unit>) -> Unit) =
     runJourney(callback) { it.setRouteOptions(MapMappers.routeOptions(options)) }
+
+  override fun journeyRouteNetworkChanged(callback: (Result<Unit>) -> Unit) =
+    runJourney(callback) { it.routeNetworkChanged() }
 
   override fun fitActiveLeg(animated: Boolean) = requireNavigator().fitActiveLeg(animated)
 
@@ -435,18 +447,31 @@ internal class MapController(
 
   // region Lifecycle
 
+  /** The SDK streams finish at `stop()`; after a restart of the same instance the session takes them again. */
+  override fun restartSession() {
+    if (Proximiio.shared !== session.sdk) {
+      throw MapFlutterError("notConfigured", "Proximiio.create replaced the SDK instance this map shows; rebuild the map.")
+    }
+    session.start()
+  }
+
   override fun dispose() {
     if (disposed) return
     disposed = true
     endNavigator()
     session.onFeatureTap = null
+    mapEvents.onAttach = null
+    journeyEvents.onAttach = null
     mapView.dismantle()
     session.close()
     scope.cancel()
-    MapHostApi.setUp(messenger, null, handle.toString())
+    MapChannels.release(messenger, handle)
+    registry.removed(handle)
   }
 
   // endregion
+
+  private fun superseded() = MapFlutterError("superseded", "A later showRoute, clearRoute or startJourney replaced this route.")
 
   /** Route errors keep the codes and details of flutter_proximiio, so the Dart side reads them alike. */
   private fun flutterError(error: Throwable): MapFlutterError = when (error) {

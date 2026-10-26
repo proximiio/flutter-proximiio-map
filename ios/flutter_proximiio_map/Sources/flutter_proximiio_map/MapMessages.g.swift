@@ -1528,6 +1528,9 @@ struct MapMsgJourneyState: Hashable {
   var isFinished: Bool
   /// Stops no route leads to, with the SDK's `NoRouteReason` name.
   var noRouteStopIds: [String: String]
+  /// Ids of the stops a reorder may touch, in walking order: the index space of `moveStop` and
+  /// `insertStop`.
+  var reorderableStopIds: [String]
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -1540,6 +1543,7 @@ struct MapMsgJourneyState: Hashable {
     let hasArrived = pigeonVar_list[5] as! Bool
     let isFinished = pigeonVar_list[6] as! Bool
     let noRouteStopIds = pigeonVar_list[7] as! [String: String]
+    let reorderableStopIds = pigeonVar_list[8] as! [String]
 
     return MapMsgJourneyState(
       journey: journey,
@@ -1549,7 +1553,8 @@ struct MapMsgJourneyState: Hashable {
       detourStopId: detourStopId,
       hasArrived: hasArrived,
       isFinished: isFinished,
-      noRouteStopIds: noRouteStopIds
+      noRouteStopIds: noRouteStopIds,
+      reorderableStopIds: reorderableStopIds
     )
   }
   func toList() -> [Any?] {
@@ -1562,13 +1567,14 @@ struct MapMsgJourneyState: Hashable {
       hasArrived,
       isFinished,
       noRouteStopIds,
+      reorderableStopIds,
     ]
   }
   static func == (lhs: MapMsgJourneyState, rhs: MapMsgJourneyState) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsMapMessages(lhs.journey, rhs.journey) && deepEqualsMapMessages(lhs.overview, rhs.overview) && deepEqualsMapMessages(lhs.deviation, rhs.deviation) && deepEqualsMapMessages(lhs.activeStopId, rhs.activeStopId) && deepEqualsMapMessages(lhs.detourStopId, rhs.detourStopId) && deepEqualsMapMessages(lhs.hasArrived, rhs.hasArrived) && deepEqualsMapMessages(lhs.isFinished, rhs.isFinished) && deepEqualsMapMessages(lhs.noRouteStopIds, rhs.noRouteStopIds)
+    return deepEqualsMapMessages(lhs.journey, rhs.journey) && deepEqualsMapMessages(lhs.overview, rhs.overview) && deepEqualsMapMessages(lhs.deviation, rhs.deviation) && deepEqualsMapMessages(lhs.activeStopId, rhs.activeStopId) && deepEqualsMapMessages(lhs.detourStopId, rhs.detourStopId) && deepEqualsMapMessages(lhs.hasArrived, rhs.hasArrived) && deepEqualsMapMessages(lhs.isFinished, rhs.isFinished) && deepEqualsMapMessages(lhs.noRouteStopIds, rhs.noRouteStopIds) && deepEqualsMapMessages(lhs.reorderableStopIds, rhs.reorderableStopIds)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -1581,6 +1587,7 @@ struct MapMsgJourneyState: Hashable {
     deepHashMapMessages(value: hasArrived, hasher: &hasher)
     deepHashMapMessages(value: isFinished, hasher: &hasher)
     deepHashMapMessages(value: noRouteStopIds, hasher: &hasher)
+    deepHashMapMessages(value: reorderableStopIds, hasher: &hasher)
   }
 }
 
@@ -2461,8 +2468,12 @@ var mapMessagesPigeonMethodCodec = FlutterStandardMethodCodec(readerWriter: MapM
 ///
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol MapRegistryApi {
-  /// Stores [options] and returns the handle to pass to the platform view.
-  func prepare(options: MapMsgOptions) throws -> Int64
+  /// Stores [options] and returns the handle to pass to the platform view. [isolateToken] is
+  /// random per Dart isolate: a new token (after a hot restart) releases the maps of the old one.
+  func prepare(options: MapMsgOptions, isolateToken: String) throws -> Int64
+  /// Releases the map with [handle], also one whose platform view was never created. Releasing an
+  /// unknown or released handle does nothing.
+  func release(handle: Int64) throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -2471,14 +2482,16 @@ class MapRegistryApiSetup {
   /// Sets up an instance of `MapRegistryApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: MapRegistryApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    /// Stores [options] and returns the handle to pass to the platform view.
+    /// Stores [options] and returns the handle to pass to the platform view. [isolateToken] is
+    /// random per Dart isolate: a new token (after a hot restart) releases the maps of the old one.
     let prepareChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_proximiio_map.MapRegistryApi.prepare\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       prepareChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let optionsArg = args[0] as! MapMsgOptions
+        let isolateTokenArg = args[1] as! String
         do {
-          let result = try api.prepare(options: optionsArg)
+          let result = try api.prepare(options: optionsArg, isolateToken: isolateTokenArg)
           reply(wrapResult(result))
         } catch {
           reply(wrapError(error))
@@ -2487,13 +2500,30 @@ class MapRegistryApiSetup {
     } else {
       prepareChannel.setMessageHandler(nil)
     }
+    /// Releases the map with [handle], also one whose platform view was never created. Releasing an
+    /// unknown or released handle does nothing.
+    let releaseChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_proximiio_map.MapRegistryApi.release\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      releaseChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let handleArg = args[0] as! Int64
+        do {
+          try api.release(handle: handleArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      releaseChannel.setMessageHandler(nil)
+    }
   }
 }
 /// One map, addressed by its handle as the channel suffix.
 ///
 /// Errors: `notConfigured` (no SDK instance: call `Proximiio.create` first), `notReady` (the view
 /// is gone), `noJourney`, `unknownProposal`, `invalidArgument`, `noRoute` (details as in
-/// flutter_proximiio), `unsupported`.
+/// flutter_proximiio), `superseded` (a later route call replaced this one), `unsupported`.
 ///
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol MapHostApi {
@@ -2542,6 +2572,11 @@ protocol MapHostApi {
   func setJourneyRouteOptions(options: MapMsgRouteOptions, completion: @escaping (Result<Void, Error>) -> Void)
   func fitActiveLeg(animated: Bool) throws
   func fitJourney(animated: Bool) throws
+  /// Takes the SDK streams again after the SDK was stopped and started. Sets the map's error when
+  /// `Proximiio.create` replaced the instance the map shows.
+  func restartSession() throws
+  /// The route network changed (the SDK reported new features): routes the journey again.
+  func journeyRouteNetworkChanged(completion: @escaping (Result<Void, Error>) -> Void)
   /// Releases the map: the view, the session and a running journey.
   func dispose() throws
 }
@@ -3232,6 +3267,37 @@ class MapHostApiSetup {
       }
     } else {
       fitJourneyChannel.setMessageHandler(nil)
+    }
+    /// Takes the SDK streams again after the SDK was stopped and started. Sets the map's error when
+    /// `Proximiio.create` replaced the instance the map shows.
+    let restartSessionChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.restartSession\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      restartSessionChannel.setMessageHandler { _, reply in
+        do {
+          try api.restartSession()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      restartSessionChannel.setMessageHandler(nil)
+    }
+    /// The route network changed (the SDK reported new features): routes the journey again.
+    let journeyRouteNetworkChangedChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.journeyRouteNetworkChanged\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      journeyRouteNetworkChangedChannel.setMessageHandler { _, reply in
+        api.journeyRouteNetworkChanged { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      journeyRouteNetworkChangedChannel.setMessageHandler(nil)
     }
     /// Releases the map: the view, the session and a running journey.
     let disposeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.dispose\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

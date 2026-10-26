@@ -23,6 +23,18 @@ description: Common map problems and how to find their cause.
 
 <p>The SDK's route network is not installed: call <code>sdk.loadRouteNetwork()</code> after <code>authenticate</code>.</p>
 
+<h2>The dot stopped moving after the SDK was restarted</h2>
+
+<p>
+  The map follows <code>sdk.stop()</code> and <code>sdk.start()</code> of its SDK instance by itself. When
+  <code>Proximiio.create</code> made a new instance, <code>lastError</code> asks for a new map: rebuild
+  <code>ProximiioMap</code> with a new <code>Key</code>.
+</p>
+
+<h2>showRoute throws superseded</h2>
+
+<p>A later <code>showRoute</code>, <code>clearRoute</code> or <code>startJourney</code> was called while the route was computing. The newer call wins; nothing was drawn for the older one.</p>
+
 <h2>The map does not pan inside a scroll view</h2>
 
 <p>Custom <code>gestureRecognizers</code> without an eager recognizer let the scroll view win. Leave the parameter out, or include <code>EagerGestureRecognizer</code>.</p>

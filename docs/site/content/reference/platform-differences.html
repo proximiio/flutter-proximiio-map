@@ -10,7 +10,8 @@ description: Where the iOS and Android maps differ behind the same Dart API.
     <tr><td>Composition</td><td>UIKit platform view in the app's view-controller hierarchy</td><td>Texture layer; an opaque <code>backgroundColor</code> switches to a <code>SurfaceView</code></td></tr>
     <tr><td>MapLibre</td><td>Pinned exactly at 6.29.0</td><td>13.5.0 or newer</td></tr>
     <tr><td>Lifecycle</td><td>Follows its view controller</td><td>Follows the activity</td></tr>
+    <tr><td>Content insets</td><td>Move the camera framing, the logo and the attribution</td><td>Move the camera framing only</td></tr>
+    <tr><td><code>backgroundColor</code> change</td><td>Applied at once</td><td>Applied to a new map</td></tr>
+    <tr><td>A rejected value</td><td><code>MapErrorCode.underlying</code></td><td><code>MapErrorCode.invalidArgument</code></td></tr>
   </tbody>
 </table>
-
-<p>Map behaviour (style, floors, routes, guidance, journeys) is the same: the Android map is a port of the iOS map, which is the reference.</p>

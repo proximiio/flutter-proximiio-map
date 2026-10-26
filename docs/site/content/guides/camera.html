@@ -12,7 +12,7 @@ await map.fitCoordinates([entrance, gate]);
 await map.showVenue();       // frame the whole venue
 await map.recentre();        // follow the visitor again</code></pre>
 
-<p>All of them animate unless <code>animated: false</code>.</p>
+<p><code>setCenter</code>, <code>setZoom</code>, <code>zoomBy</code>, <code>fitCoordinates</code> and <code>showVenue</code> animate unless <code>animated: false</code>.</p>
 
 <h2>Read it</h2>
 
@@ -33,7 +33,7 @@ await map.recentre();        // follow the visitor again</code></pre>
 
 <h2>Insets</h2>
 
-<p>Keep the camera's framing, the logo and the attribution clear of your UI, for example a bottom sheet:</p>
+<p>Keep the camera's framing clear of your UI, for example a bottom sheet. On iOS the logo and the attribution move with the insets; on Android they keep MapLibre's default position.</p>
 
 <pre><code class="language-dart">MapOptions(contentInsets: MapContentInsets.safeAreaPlus(EdgeInsetsDirectional.only(bottom: sheetHeight)));</code></pre>
 

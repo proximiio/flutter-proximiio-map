@@ -48,6 +48,16 @@ void main() {
     final camera = await map.cameraState();
     expect(camera.zoom, closeTo(17, 0.5));
 
-    await expectLater(map.startJourney(const Journey([])).then((journey) => journey.end()), completes);
+    final journey = await map.startJourney(const Journey([]));
+    await journey.end();
+    expect(map.journey, isNull);
+
+    // After the SDK stops and starts again, the map takes the SDK streams again.
+    await sdk.start();
+    await sdk.stop();
+    await sdk.start();
+    await tester.pump(const Duration(seconds: 2));
+    expect(map.lastError.value, isNull);
+    await sdk.stop();
   }, skip: _token.isEmpty);
 }

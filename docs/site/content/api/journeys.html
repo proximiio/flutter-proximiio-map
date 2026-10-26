@@ -1,33 +1,40 @@
 <!--
 title: Journey types
-description: Journey, JourneyStop, JourneyRules, JourneyNavigator, JourneyState and the journey events.
+description: Journey, JourneyStop, JourneyRules, JourneyNavigator, JourneyState, the journey events and the reorder types.
 -->
 
 <h2>Plan</h2>
 
 <table>
-  <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+  <thead><tr><th>Declaration</th><th>Notes</th></tr></thead>
   <tbody>
-    <tr><td><code>Journey</code></td><td><code>stops</code>; <code>toJson</code>, <code>fromJson</code>, <code>fromProximiioJourney</code></td></tr>
-    <tr><td><code>JourneyStop</code></td><td><code>id</code>, <code>title</code>, <code>coordinate</code>, <code>level</code>, <code>poiId</code>, <code>group</code>, <code>iconName</code>, <code>kind</code> (<code>planned</code>, <code>detour</code>), <code>state</code> (<code>pending</code>, <code>active</code>, <code>reached</code>, <code>done</code>, <code>skipped</code>)</td></tr>
-    <tr><td><code>JourneyRules</code></td><td><code>advanceOnDepartureMeters</code>, <code>rerouteCooldown</code>, <code>walkingSpeedMetersPerSecond</code>; <code>JourneyRules.venueVisit</code></td></tr>
+    <tr><td><code>const Journey(List&lt;JourneyStop&gt; stops)</code></td><td>Stops in visiting order; <code>toJson()</code>, <code>Journey.fromJson</code>, <code>Journey.fromProximiioJourney</code> (a journey edited in Proximi.io Portal; waypoints without a position are left out, stop ids are <code>&lt;journey id&gt;-&lt;index&gt;</code>)</td></tr>
+    <tr><td><code>const JourneyStop({required String id, required String title, required Coordinate coordinate, double? level, String? poiId, String? group, String? iconName, JourneyStopKind kind = JourneyStopKind.planned, JourneyStopState state = JourneyStopState.pending})</code></td><td><code>id</code> unique within the journey; <code>level</code> <code>null</code> for an outdoor stop; <code>toJson()</code>, <code>JourneyStop.fromJson</code></td></tr>
+    <tr><td><code>const JourneyRules({double? advanceOnDepartureMeters, Duration rerouteCooldown = const Duration(seconds: 10), double walkingSpeedMetersPerSecond = 1.2})</code></td><td><code>advanceOnDepartureMeters: null</code> advances only on <code>advance()</code>; <code>JourneyRules.venueVisit</code> is <code>JourneyRules()</code></td></tr>
   </tbody>
 </table>
+
+<p><code>JourneyStopKind</code>: <code>planned</code>, <code>detour</code>. <code>JourneyStopState</code>: <code>pending</code>, <code>active</code>, <code>reached</code>, <code>done</code>, <code>skipped</code>.</p>
 
 <h2>JourneyNavigator</h2>
 
 <table>
-  <thead><tr><th>Member</th><th>Purpose</th></tr></thead>
+  <thead><tr><th>Declaration</th><th>Notes</th></tr></thead>
   <tbody>
-    <tr><td><code>state</code></td><td><code>ValueListenable&lt;JourneyState?&gt;</code></td></tr>
-    <tr><td><code>guidance</code></td><td><code>ValueListenable&lt;RouteGuidance?&gt;</code> of the active leg</td></tr>
-    <tr><td><code>events</code></td><td><code>Stream&lt;JourneyEvent&gt;</code></td></tr>
-    <tr><td><code>cues</code></td><td><code>Stream&lt;JourneyCue&gt;</code> (<code>kind</code>, <code>text</code>, <code>distanceMeters</code>)</td></tr>
-    <tr><td><code>advance</code>, <code>skip</code>, <code>skipStop</code>, <code>markDone</code>, <code>reopen</code>, <code>activate</code></td><td>Progress</td></tr>
-    <tr><td><code>detour</code>, <code>cancelDetour</code>, <code>resumeJourney</code></td><td>Detours</td></tr>
-    <tr><td><code>addStop</code>, <code>insertStop</code>, <code>removeStop</code>, <code>replaceStop</code>, <code>moveStop</code>, <code>update</code></td><td>Edit the plan</td></tr>
-    <tr><td><code>proposeOrder</code>, <code>replanFromHere</code>, <code>apply</code></td><td>Reorder (<code>JourneyOrderProposal</code>)</td></tr>
-    <tr><td><code>setRouteOptions</code>, <code>fitActiveLeg</code>, <code>fitJourney</code>, <code>end</code></td><td>Routing, camera, end</td></tr>
+    <tr><td><code>ValueListenable&lt;JourneyState?&gt; state</code>, <code>ValueListenable&lt;RouteGuidance?&gt; guidance</code></td><td>State; guidance of the active leg</td></tr>
+    <tr><td><code>Stream&lt;JourneyEvent&gt; events</code>, <code>Stream&lt;JourneyCue&gt; cues</code></td><td>Events; announcements for text-to-speech</td></tr>
+    <tr><td><code>Future&lt;void&gt; advance()</code>, <code>Future&lt;void&gt; skip()</code></td><td>Next stop; skip the active one</td></tr>
+    <tr><td><code>Future&lt;bool&gt; skipStop(String stopId)</code>, <code>markDone</code>, <code>reopen</code>, <code>activate</code></td><td>Change one stop; <code>false</code> when nothing changed</td></tr>
+    <tr><td><code>Future&lt;void&gt; detour(JourneyStop stop)</code>, <code>cancelDetour()</code>, <code>resumeJourney()</code></td><td>Detours; resume after a detour or a deviation</td></tr>
+    <tr><td><code>Future&lt;bool&gt; addStop(JourneyStop stop)</code>, <code>Future&lt;bool&gt; insertStop(JourneyStop stop, int index)</code></td><td><code>false</code> when the id exists; <code>index</code> into <code>state.reorderableStops</code>, clamped</td></tr>
+    <tr><td><code>Future&lt;void&gt; moveStop(String stopId, int toIndex)</code></td><td><code>toIndex</code> into <code>state.reorderableStops</code>, clamped; 0 makes it the stop walked to</td></tr>
+    <tr><td><code>Future&lt;bool&gt; removeStop(String stopId)</code>, <code>replaceStop(JourneyStop stop)</code>, <code>update(Journey journey)</code></td><td>Edit the plan; <code>update</code> keeps the progress of stops that remain</td></tr>
+    <tr><td><code>Future&lt;JourneyOrderProposal?&gt; proposeOrder({JourneyOrderOrigin origin = JourneyOrderOrigin.activeStop, Set&lt;String&gt; pinnedStopIds = const {}, JourneyOrderStrategy strategy = JourneyOrderStrategy.quickestWalk})</code></td><td><code>null</code> when the current order is best</td></tr>
+    <tr><td><code>Future&lt;bool&gt; apply(JourneyOrderProposal proposal)</code></td><td>Applies a proposal from <code>proposeOrder</code>; <code>false</code> when out of date</td></tr>
+    <tr><td><code>Future&lt;JourneyOrderProposal?&gt; replanFromHere({Set&lt;String&gt; pinnedStopIds = const {}})</code></td><td>Reorders from the visitor's position at once and returns the order applied; <code>null</code> when fewer than two stops remain or the walks could not be measured</td></tr>
+    <tr><td><code>Future&lt;void&gt; setRouteOptions(RouteOptions options)</code>, <code>routeNetworkChanged()</code></td><td>Route the remaining legs again; the map calls <code>routeNetworkChanged</code> when the SDK reports new features</td></tr>
+    <tr><td><code>Future&lt;void&gt; fitActiveLeg({bool animated = true})</code>, <code>fitJourney({bool animated = true})</code></td><td>Camera</td></tr>
+    <tr><td><code>Future&lt;void&gt; end()</code></td><td>Ends the journey; <code>map.journey</code> is <code>null</code> afterwards</td></tr>
   </tbody>
 </table>
 
@@ -36,20 +43,50 @@ description: Journey, JourneyStop, JourneyRules, JourneyNavigator, JourneyState 
 <table>
   <thead><tr><th>Type</th><th>Fields</th></tr></thead>
   <tbody>
-    <tr><td><code>JourneyState</code></td><td><code>journey</code>, <code>overview</code>, <code>deviation</code>, <code>activeStopId</code>, <code>activeStop</code>, <code>detourStopId</code>, <code>hasArrived</code>, <code>isFinished</code>, <code>noRouteReasons</code></td></tr>
-    <tr><td><code>JourneyOverview</code></td><td><code>remainingStopIds</code>, <code>legs</code>, <code>remainingMeters</code>, <code>eta</code>, <code>activeLegRemainingMeters</code>, <code>activeLegEta</code>, <code>unmeasuredLegCount</code>, <code>unreachableStopIds</code></td></tr>
-    <tr><td><code>JourneyLeg</code></td><td><code>destinationStopId</code>, <code>originStopId</code>, <code>meters</code>, <code>isUnreachable</code>, <code>isActive</code>, <code>duration</code></td></tr>
-    <tr><td><code>JourneyDeviation</code></td><td><code>episode</code>, <code>since</code>, <code>distanceMeters</code>, <code>isOnRouteFloor</code></td></tr>
+    <tr><td><code>JourneyState</code></td><td><code>journey</code>, <code>overview</code>, <code>deviation</code>, <code>activeStopId</code>, <code>activeStop</code>, <code>detourStopId</code>, <code>hasArrived</code>, <code>isFinished</code>, <code>noRouteReasons</code> (stop id → <code>NoRouteReason?</code>), <code>reorderableStops</code> and <code>reorderableStopIds</code> (the stops a reorder may touch: still to walk, except one already reached and a live detour)</td></tr>
+    <tr><td><code>JourneyOverview</code></td><td><code>List&lt;String&gt; remainingStopIds</code>, <code>List&lt;JourneyLeg&gt; legs</code>, <code>double remainingMeters</code>, <code>Duration eta</code>, <code>double? activeLegRemainingMeters</code>, <code>Duration? activeLegEta</code>, <code>int unmeasuredLegCount</code>, <code>List&lt;String&gt; unreachableStopIds</code></td></tr>
+    <tr><td><code>JourneyLeg</code></td><td><code>String destinationStopId</code>, <code>String? originStopId</code> (<code>null</code> for the leg from the visitor), <code>double? meters</code> (<code>null</code> while not measured), <code>bool isUnreachable</code>, <code>bool isActive</code>, <code>Duration? duration</code></td></tr>
+    <tr><td><code>JourneyDeviation</code></td><td><code>int episode</code>, <code>DateTime since</code>, <code>double distanceMeters</code>, <code>bool isOnRouteFloor</code></td></tr>
   </tbody>
 </table>
 
-<h2>Events</h2>
+<h2>Events and cues</h2>
+
+<table>
+  <thead><tr><th>Event</th><th>Fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>JourneyLeftRoute</code>, <code>JourneyFarFromRoute</code></td><td><code>double distanceMeters</code></td></tr>
+    <tr><td><code>JourneyOffRouteTooLong</code></td><td><code>Duration duration</code></td></tr>
+    <tr><td><code>JourneyReturnedToRoute</code>, <code>JourneyFinished</code></td><td></td></tr>
+    <tr><td><code>JourneyDetourOverstayed</code></td><td><code>JourneyStop stop</code>, <code>Duration duration</code></td></tr>
+    <tr><td><code>JourneyDetourStarted</code></td><td><code>JourneyStop stop</code></td></tr>
+    <tr><td><code>JourneyDetourEnded</code></td><td><code>JourneyStop stop</code>, <code>bool completed</code></td></tr>
+    <tr><td><code>JourneyStopReached</code>, <code>JourneyStopPassed</code>, <code>JourneyStopSkipped</code>, <code>JourneyRerouted</code></td><td><code>JourneyStop stop</code></td></tr>
+    <tr><td><code>JourneyLegChanged</code></td><td><code>JourneyStop stop</code>, <code>String reason</code> (<code>started</code>, <code>advanced</code>, <code>skipped</code>, <code>detour</code>, <code>detourCancelled</code>, <code>resumed</code>, <code>reordered</code>, …)</td></tr>
+    <tr><td><code>JourneyUnknownEvent</code></td><td><code>String kind</code>, for an event added after this release</td></tr>
+  </tbody>
+</table>
 
 <p>
-  <code>JourneyEvent</code> is sealed: <code>JourneyLeftRoute</code>, <code>JourneyFarFromRoute</code>,
-  <code>JourneyOffRouteTooLong</code>, <code>JourneyReturnedToRoute</code>, <code>JourneyDetourOverstayed</code>,
-  <code>JourneyDetourStarted</code>, <code>JourneyDetourEnded</code>, <code>JourneyStopReached</code>,
-  <code>JourneyStopPassed</code>, <code>JourneyStopSkipped</code>, <code>JourneyLegChanged</code> (with
-  <code>reason</code>), <code>JourneyRerouted</code>, <code>JourneyFinished</code>, and
-  <code>JourneyUnknownEvent</code> for events added after this release.
+  <code>JourneyCue</code>: <code>JourneyCueKind kind</code> (<code>manoeuvre</code>, <code>levelChange</code>,
+  <code>approachingDestination</code>, <code>arrived</code>, <code>unknown</code>), <code>String text</code>
+  in the map's language, <code>double distanceMeters</code> to the announced point.
 </p>
+
+<h2>Reorder</h2>
+
+<table>
+  <thead><tr><th>Type</th><th>Values or fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>JourneyOrderOrigin</code></td><td><code>activeStop</code>, <code>visitor</code></td></tr>
+    <tr><td><code>JourneyOrderStrategy</code></td><td><code>quickestWalk</code>, <code>floorThenGallery</code></td></tr>
+    <tr><td><code>JourneyOrderProposal</code></td><td><code>List&lt;String&gt; order</code>, <code>List&lt;String&gt; pinnedStopIds</code>, <code>double currentMeters</code>, <code>double proposedMeters</code>, <code>Duration currentDuration</code>, <code>Duration proposedDuration</code>, <code>double savedMeters</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Errors</h2>
+
+<ul>
+  <li>Calls on an ended navigator throw <code>MapErrorCode.noJourney</code>.</li>
+  <li><code>apply</code> of a proposal applied already, or of one from <code>replanFromHere</code>, throws <code>MapErrorCode.unknownProposal</code>.</li>
+</ul>

@@ -52,7 +52,8 @@ layout: landing
 
 <h2>The shortest integration</h2>
 
-<pre><code class="language-dart">final sdk = await Proximiio.create(const ProximiioConfiguration(token: token));
+<pre><code class="language-dart">final sdk = await Proximiio.create(ProximiioConfiguration(token: token));
+await sdk.requestPermissions();
 await sdk.authenticate();
 await sdk.start();
 

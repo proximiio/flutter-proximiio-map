@@ -1,31 +1,98 @@
 <!--
 title: MapOptions
-description: Every setting of MapOptions and its nested types, with defaults.
+description: Every setting of MapOptions and its nested types, with defaults and units.
 -->
+
+<p>Options compare by value. Pass <code>const</code> options where you can. Sizes are logical pixels.</p>
+
+<h2>MapOptions</h2>
 
 <table>
   <thead><tr><th>Property</th><th>Default</th><th>Purpose</th></tr></thead>
   <tbody>
-    <tr><td><code>camera</code></td><td><code>CameraMode.follow</code></td><td>Camera behaviour</td></tr>
-    <tr><td><code>floorSelector</code></td><td><code>none</code></td><td>Built-in floor picker: <code>none</code>, <code>leading</code>, <code>trailing</code></td></tr>
-    <tr><td><code>trail</code></td><td><code>MapTrail.off()</code></td><td><code>lastMinutes(m)</code>, <code>lastFixes(n)</code></td></tr>
-    <tr><td><code>features</code></td><td><code>MapFeatures.venueDefaults()</code></td><td><code>none()</code>, <code>only(MapLayerToggles)</code></td></tr>
-    <tr><td><code>showsRoute</code></td><td><code>true</code></td><td>Draw routes and journey legs</td></tr>
-    <tr><td><code>showsGeofences</code></td><td><code>false</code></td><td>Draw geofences</td></tr>
-    <tr><td><code>contentInsets</code></td><td><code>MapContentInsets.safeArea()</code></td><td>Space kept free</td></tr>
-    <tr><td><code>amenities</code></td><td><code>true</code></td><td>Amenity icons</td></tr>
-    <tr><td><code>fallbackStyleUrl</code></td><td>MapLibre demo tiles</td><td>Style when the organisation style fails</td></tr>
-    <tr><td><code>recentreZoom</code></td><td>18.5</td><td>Zoom of <code>recentre()</code></td></tr>
-    <tr><td><code>offlinePackageId</code></td><td>none</td><td>Take the style from an offline package</td></tr>
-    <tr><td><code>chrome</code></td><td>attribution only</td><td><code>MapChrome</code>; <code>MapChrome.bare</code> hides the credits</td></tr>
-    <tr><td><code>routeLineStyle</code></td><td>amber line, 10</td><td><code>RouteLineStyle(color, toColor, completedColor, width)</code></td></tr>
-    <tr><td><code>routeMarkers</code></td><td>amber markers</td><td><code>RouteMarkerStyle(isVisible, color, completedColor)</code></td></tr>
-    <tr><td><code>geofenceStyle</code></td><td>teal fill</td><td><code>GeofenceStyle(fillColor, fillOpacity, lineColor, lineWidth)</code></td></tr>
-    <tr><td><code>initialFraming</code></td><td><code>allFeatures</code></td><td>First camera position</td></tr>
-    <tr><td><code>language</code></td><td>the device language</td><td>Labels, floor names, guidance</td></tr>
-    <tr><td><code>heading</code></td><td><code>HeadingMode.course</code></td><td><code>course</code>, <code>compass</code>, <code>none</code></td></tr>
-    <tr><td><code>backgroundColor</code></td><td>transparent</td><td>Behind the tiles; keep it transparent on Android</td></tr>
+    <tr><td><code>CameraMode camera</code></td><td><code>follow</code></td><td>Camera behaviour</td></tr>
+    <tr><td><code>FloorSelectorPosition floorSelector</code></td><td><code>none</code></td><td>Built-in floor picker</td></tr>
+    <tr><td><code>MapTrail trail</code></td><td><code>MapTrail.off()</code></td><td>Trail of past positions</td></tr>
+    <tr><td><code>MapFeatures features</code></td><td><code>MapFeatures.venueDefaults()</code></td><td>Venue layers</td></tr>
+    <tr><td><code>bool showsRoute</code></td><td><code>true</code></td><td>Draw routes and journey legs</td></tr>
+    <tr><td><code>bool showsGeofences</code></td><td><code>false</code></td><td>Draw geofences</td></tr>
+    <tr><td><code>MapContentInsets contentInsets</code></td><td><code>MapContentInsets.safeArea()</code></td><td>Space kept free of map content</td></tr>
+    <tr><td><code>bool amenities</code></td><td><code>true</code></td><td>Load amenity icons; <code>false</code> skips them and a style that uses them draws a placeholder</td></tr>
+    <tr><td><code>Uri? fallbackStyleUrl</code></td><td>MapLibre demo tiles</td><td>Style when the organisation style cannot be loaded</td></tr>
+    <tr><td><code>double? recentreZoom</code></td><td>18.5</td><td>Zoom of <code>recentre()</code></td></tr>
+    <tr><td><code>String? offlinePackageId</code></td><td><code>null</code></td><td>Offline package to take the style from; read when the map starts</td></tr>
+    <tr><td><code>MapChrome? chrome</code></td><td><code>MapChrome()</code></td><td>The map's controls</td></tr>
+    <tr><td><code>RouteLineStyle? routeLineStyle</code></td><td><code>null</code>: the organisation style's route line</td><td>A value replaces the style's route line</td></tr>
+    <tr><td><code>RouteMarkerStyle? routeMarkers</code></td><td><code>RouteMarkerStyle()</code></td><td>Pins at the route's floor changes</td></tr>
+    <tr><td><code>GeofenceStyle? geofenceStyle</code></td><td><code>GeofenceStyle()</code></td><td>Geofence drawing</td></tr>
+    <tr><td><code>InitialFraming initialFraming</code></td><td><code>allFeatures</code></td><td>First camera position; read when the map opens</td></tr>
+    <tr><td><code>String? language</code></td><td><code>null</code>: the app's display language</td><td>Labels, floor names, guidance</td></tr>
+    <tr><td><code>HeadingMode heading</code></td><td><code>course</code></td><td>Direction of the dot</td></tr>
+    <tr><td><code>Color? backgroundColor</code></td><td>transparent</td><td>Behind the tiles; iOS applies a change at once, Android to a new map. Keep it transparent on Android</td></tr>
   </tbody>
 </table>
 
-<p>Options compare by value. Pass <code>const</code> options where you can.</p>
+<h2>Enums</h2>
+
+<table>
+  <thead><tr><th>Type</th><th>Values</th></tr></thead>
+  <tbody>
+    <tr><td><code>CameraMode</code></td><td><code>free</code> (stays where the user moves it), <code>follow</code>, <code>followWithHeading</code></td></tr>
+    <tr><td><code>HeadingMode</code></td><td><code>course</code> (direction of movement), <code>compass</code>, <code>none</code></td></tr>
+    <tr><td><code>FloorSelectorPosition</code></td><td><code>none</code>, <code>leading</code>, <code>trailing</code></td></tr>
+    <tr><td><code>InitialFraming</code></td><td><code>allFeatures</code>, <code>legacyFirstFloor</code> (the first floor, as the legacy maps did)</td></tr>
+  </tbody>
+</table>
+
+<h2>Trail and features</h2>
+
+<table>
+  <thead><tr><th>Constructor</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>MapTrail.off()</code></td><td>No trail</td></tr>
+    <tr><td><code>MapTrail.lastMinutes(double minutes)</code></td><td>Positions of the last <code>minutes</code></td></tr>
+    <tr><td><code>MapTrail.lastFixes(int count)</code></td><td>The last <code>count</code> positions</td></tr>
+    <tr><td><code>MapFeatures.venueDefaults()</code></td><td>The venue's default layers (everything but the paths)</td></tr>
+    <tr><td><code>MapFeatures.none()</code></td><td>No venue features</td></tr>
+    <tr><td><code>MapFeatures.only(MapLayerToggles toggles)</code></td><td>Only the layers in <code>toggles</code></td></tr>
+  </tbody>
+</table>
+
+<p><code>MapLayerToggles</code>: <code>paths</code>, <code>walls</code>, <code>shops</code>, <code>pois</code>, <code>amenities</code>, <code>baseTiles</code>, each <code>bool</code>, default <code>true</code>.</p>
+
+<h2>Content insets</h2>
+
+<table>
+  <thead><tr><th>Constructor</th><th>Space kept free</th></tr></thead>
+  <tbody>
+    <tr><td><code>MapContentInsets.safeArea()</code></td><td>The device safe area</td></tr>
+    <tr><td><code>MapContentInsets.safeAreaPlus(EdgeInsetsDirectional insets)</code></td><td>The safe area plus <code>insets</code></td></tr>
+    <tr><td><code>MapContentInsets.fixed(EdgeInsetsDirectional insets)</code></td><td>Exactly <code>insets</code></td></tr>
+    <tr><td><code>MapContentInsets.none()</code></td><td>Nothing</td></tr>
+  </tbody>
+</table>
+
+<p>The insets move the camera framing on both platforms, and the logo and the attribution on iOS only.</p>
+
+<h2>Styles</h2>
+
+<table>
+  <thead><tr><th>Type</th><th>Field</th><th>Default</th></tr></thead>
+  <tbody>
+    <tr><td rowspan="4"><code>MapChrome</code></td><td><code>bool showsLogo</code></td><td><code>false</code></td></tr>
+    <tr><td><code>bool showsCompass</code></td><td><code>false</code></td></tr>
+    <tr><td><code>bool showsAttribution</code></td><td><code>true</code>; <code>MapChrome.bare</code> sets it to <code>false</code></td></tr>
+    <tr><td><code>bool allowsTilting</code></td><td><code>true</code></td></tr>
+    <tr><td rowspan="4"><code>RouteLineStyle</code></td><td><code>Color color</code></td><td><code>0xFFFFAF12</code>; the part ahead, the gradient start with <code>toColor</code></td></tr>
+    <tr><td><code>Color? toColor</code></td><td><code>null</code>: a solid line</td></tr>
+    <tr><td><code>Color completedColor</code></td><td><code>0xFF9E9E9E</code>; the part walked</td></tr>
+    <tr><td><code>double width</code></td><td>10</td></tr>
+    <tr><td rowspan="3"><code>RouteMarkerStyle</code></td><td><code>bool isVisible</code></td><td><code>true</code>; <code>RouteMarkerStyle.off</code> hides the pins</td></tr>
+    <tr><td><code>Color color</code></td><td><code>0xFFFFAF12</code></td></tr>
+    <tr><td><code>Color completedColor</code></td><td><code>0xFF9E9E9E</code>; pins already passed</td></tr>
+    <tr><td rowspan="4"><code>GeofenceStyle</code></td><td><code>Color fillColor</code></td><td><code>0xFF38CFE0</code></td></tr>
+    <tr><td><code>double fillOpacity</code></td><td>0.16 (0 to 1)</td></tr>
+    <tr><td><code>Color lineColor</code></td><td><code>0xFF1E9EB0</code></td></tr>
+    <tr><td><code>double lineWidth</code></td><td>2</td></tr>
+  </tbody>
+</table>

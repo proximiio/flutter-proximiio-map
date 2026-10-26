@@ -12,6 +12,10 @@
 	<string>Uses Bluetooth beacons to find your position indoors.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Uses motion sensors to keep your position steady.</string>
+	<key>NSNearbyInteractionUsageDescription</key>
+	<string>Uses ultra-wideband anchors to find your position indoors.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Uses the camera to improve the direction to ultra-wideband anchors.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Flutter Proximiio Map</string>
 	<key>CFBundleExecutable</key>

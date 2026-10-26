@@ -3,11 +3,6 @@ title: Attribution and licences
 description: Keep the map credits visible and ship the MapLibre licence notice.
 -->
 
-<p>
-  The map shows the credits of the map data by default. Keep them visible and include the MapLibre
-  BSD 2-Clause notice in the app's licences.
-</p>
-
 <h2>The controls</h2>
 
 <table>
@@ -20,12 +15,16 @@ description: Keep the map credits visible and ship the MapLibre licence notice.
   </tbody>
 </table>
 
-<div class="doc-aside doc-aside-caution"><p>
+<div class="doc-aside doc-aside-note"><p>
   <code>MapChrome.bare</code> turns the credits off. Show them elsewhere in the app, for example in an
   about screen, when you use it.
 </p></div>
 
-<p>A bottom sheet over the credits hides them: keep the space free with <code>MapContentInsets.safeAreaPlus</code> instead (see <a href="{{root}}guides/camera.html">Camera and insets</a>).</p>
+<p>
+  A bottom sheet over the credits hides them. On iOS <code>MapContentInsets.safeAreaPlus</code> moves
+  them above the sheet (see <a href="{{root}}guides/camera.html">Camera and insets</a>). On Android the
+  insets do not move them; keep the bottom-right corner uncovered or show the credits elsewhere.
+</p>
 
 <h2>Licences</h2>
 

@@ -1,6 +1,6 @@
 <!--
 title: ProximiioMapController
-description: Every member of the map controller, and the errors it throws.
+description: Every member of the map controller, its value types, and the errors it throws.
 -->
 
 <p>One controller per map, from <code>ProximiioMap.onMapCreated</code>. Methods return <code>Future</code>s.</p>
@@ -8,36 +8,73 @@ description: Every member of the map controller, and the errors it throws.
 <h2>State</h2>
 
 <table>
-  <thead><tr><th>Member</th><th>Type</th></tr></thead>
+  <thead><tr><th>Member</th><th>Notes</th></tr></thead>
   <tbody>
-    <tr><td><code>floors</code></td><td><code>ValueListenable&lt;List&lt;MapFloor&gt;&gt;</code></td></tr>
-    <tr><td><code>selectedFloor</code></td><td><code>ValueListenable&lt;MapFloorSelection&gt;</code> (<code>level</code>, <code>isPinned</code>)</td></tr>
-    <tr><td><code>cameraMode</code></td><td><code>ValueListenable&lt;CameraMode&gt;</code></td></tr>
-    <tr><td><code>styleSource</code></td><td><code>ValueListenable&lt;MapStyleSource&gt;</code></td></tr>
-    <tr><td><code>guidance</code></td><td><code>ValueListenable&lt;RouteGuidance?&gt;</code></td></tr>
-    <tr><td><code>lastError</code></td><td><code>ValueListenable&lt;String?&gt;</code></td></tr>
-    <tr><td><code>featureTaps</code></td><td><code>Stream&lt;MapFeatureTap&gt;</code></td></tr>
-    <tr><td><code>cameraReady</code></td><td><code>Future&lt;void&gt;</code></td></tr>
-    <tr><td><code>journey</code></td><td><code>JourneyNavigator?</code>, the running journey</td></tr>
+    <tr><td><code>ValueListenable&lt;List&lt;MapFloor&gt;&gt; floors</code></td><td>The venue's floors</td></tr>
+    <tr><td><code>ValueListenable&lt;MapFloorSelection&gt; selectedFloor</code></td><td>The floor shown; level 0, not pinned, until the map reports one</td></tr>
+    <tr><td><code>ValueListenable&lt;CameraMode&gt; cameraMode</code></td><td>The camera mode now</td></tr>
+    <tr><td><code>ValueListenable&lt;MapStyleSource&gt; styleSource</code></td><td><code>pending</code> until the style is loaded</td></tr>
+    <tr><td><code>ValueListenable&lt;RouteGuidance?&gt; guidance</code></td><td>Guidance along the route from <code>showRoute</code>, after <code>setGuidanceRules</code></td></tr>
+    <tr><td><code>ValueListenable&lt;String?&gt; lastError</code></td><td>The last error the map reported, for display; <code>null</code> when fine</td></tr>
+    <tr><td><code>Stream&lt;MapFeatureTap&gt; featureTaps</code></td><td>Taps on the map</td></tr>
+    <tr><td><code>Future&lt;void&gt; cameraReady</code></td><td>Completes when the camera first framed the venue; fails with <code>notConfigured</code> or <code>unsupported</code> when the map cannot be shown</td></tr>
+    <tr><td><code>JourneyNavigator? journey</code></td><td>The running journey; <code>null</code> before <code>startJourney</code> and after <code>end</code></td></tr>
   </tbody>
 </table>
 
-<h2>Methods</h2>
+<h2>Camera</h2>
 
 <table>
-  <thead><tr><th>Method</th><th>Purpose</th></tr></thead>
+  <thead><tr><th>Declaration</th><th>Notes</th></tr></thead>
   <tbody>
-    <tr><td><code>setOptions(MapOptions)</code></td><td>Replace the options</td></tr>
-    <tr><td><code>cameraState()</code></td><td><code>MapCameraState</code>: center, zoom, direction, mode</td></tr>
-    <tr><td><code>setCenter(coordinate, {zoom, animated})</code>, <code>setZoom</code>, <code>zoomBy</code>, <code>fitCoordinates</code></td><td>Move the camera</td></tr>
-    <tr><td><code>recentre({zoom, withHeading})</code>, <code>showVenue()</code></td><td>Follow the visitor; frame the venue</td></tr>
-    <tr><td><code>setHeading(degrees)</code></td><td>Point the dot; <code>null</code> returns to <code>MapOptions.heading</code></td></tr>
-    <tr><td><code>selectFloor(level)</code>, <code>followMyFloor()</code></td><td>Floors</td></tr>
-    <tr><td><code>setHiddenFeatureIds(ids)</code>, <code>clearTrail()</code></td><td>Features, trail</td></tr>
-    <tr><td><code>showRoute({from, fromLevel, to, toLevel, options})</code>, <code>clearRoute()</code></td><td>Routes; returns <code>ComputedRoute</code></td></tr>
-    <tr><td><code>setGuidanceRules(rules)</code>, <code>instructionText({destinationTitle})</code></td><td>Guidance</td></tr>
-    <tr><td><code>startJourney(journey, {rules, routeOptions})</code></td><td>Start a journey; returns <code>JourneyNavigator</code></td></tr>
-    <tr><td><code>dispose()</code></td><td>Release the map; the widget calls it</td></tr>
+    <tr><td><code>Future&lt;void&gt; setOptions(MapOptions options)</code></td><td>Replaces the options; always sent</td></tr>
+    <tr><td><code>Future&lt;MapCameraState&gt; cameraState()</code></td><td>The camera now</td></tr>
+    <tr><td><code>Future&lt;void&gt; setCenter(Coordinate center, {double? zoom, bool animated = true})</code></td><td></td></tr>
+    <tr><td><code>Future&lt;void&gt; setZoom(double zoom, {bool animated = true})</code></td><td></td></tr>
+    <tr><td><code>Future&lt;void&gt; zoomBy(double delta, {bool animated = true})</code></td><td></td></tr>
+    <tr><td><code>Future&lt;void&gt; fitCoordinates(List&lt;Coordinate&gt; coordinates, {bool animated = true})</code></td><td></td></tr>
+    <tr><td><code>Future&lt;void&gt; showVenue({bool animated = true})</code></td><td>Frames the whole venue</td></tr>
+    <tr><td><code>Future&lt;void&gt; recentre({double? zoom, bool? withHeading})</code></td><td>Follows the visitor again; <code>zoom</code> defaults to <code>MapOptions.recentreZoom</code> (18.5); <code>withHeading: null</code> turns with the heading when the camera mode is <code>followWithHeading</code></td></tr>
+    <tr><td><code>Future&lt;void&gt; setHeading(double? degrees)</code></td><td>Points the dot to <code>degrees</code>; <code>null</code> returns to <code>MapOptions.heading</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Floors and features</h2>
+
+<table>
+  <thead><tr><th>Declaration</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>Future&lt;void&gt; selectFloor(double level)</code></td><td>Shows the floor and pins it</td></tr>
+    <tr><td><code>Future&lt;void&gt; followMyFloor()</code></td><td>Follows the visitor's floor again</td></tr>
+    <tr><td><code>Future&lt;void&gt; setHiddenFeatureIds(Set&lt;String&gt; ids)</code></td><td>Hides these features</td></tr>
+    <tr><td><code>Future&lt;void&gt; clearTrail()</code></td><td>Clears the trail behind the dot</td></tr>
+  </tbody>
+</table>
+
+<h2>Routes and journeys</h2>
+
+<table>
+  <thead><tr><th>Declaration</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>Future&lt;ComputedRoute&gt; showRoute({required Coordinate from, required double fromLevel, required Coordinate to, double? toLevel, RouteOptions options = const RouteOptions()})</code></td><td><code>toLevel</code> defaults to <code>fromLevel</code>; throws <code>noRoute</code> or <code>superseded</code></td></tr>
+    <tr><td><code>Future&lt;void&gt; clearRoute()</code></td><td>Also supersedes a <code>showRoute</code> still computing</td></tr>
+    <tr><td><code>Future&lt;void&gt; setGuidanceRules(RouteFollowRules? rules)</code></td><td>Guidance on with <code>rules</code>, off with <code>null</code>; journeys follow them too</td></tr>
+    <tr><td><code>Future&lt;String?&gt; instructionText({String? destinationTitle})</code></td><td>The current instruction (English or Arabic); <code>null</code> without guidance</td></tr>
+    <tr><td><code>Future&lt;JourneyNavigator&gt; startJourney(Journey journey, {JourneyRules rules = JourneyRules.venueVisit, RouteOptions routeOptions = const RouteOptions()})</code></td><td>Replaces a running journey; calls run one after another. See <a href="{{root}}api/journeys.html">Journey types</a></td></tr>
+    <tr><td><code>Future&lt;void&gt; dispose()</code></td><td>Releases the map; the widget calls it</td></tr>
+  </tbody>
+</table>
+
+<h2>Value types</h2>
+
+<table>
+  <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>MapFloor</code></td><td><code>double level</code>, <code>String? name</code></td></tr>
+    <tr><td><code>MapFloorSelection</code></td><td><code>double level</code>, <code>bool isPinned</code> (chosen by the user or the app; the map no longer follows the visitor's floor)</td></tr>
+    <tr><td><code>MapFeatureTap</code></td><td><code>List&lt;String&gt; featureIds</code> (empty for a tap outside features), <code>Coordinate coordinate</code></td></tr>
+    <tr><td><code>MapCameraState</code></td><td><code>Coordinate? center</code>, <code>double? zoom</code>, <code>double? direction</code> (bearing in degrees), <code>CameraMode mode</code></td></tr>
+    <tr><td><code>MapStyleSource</code></td><td><code>pending</code>, <code>cache</code>, <code>organization</code>, <code>offlinePackage</code>, <code>fallback</code></td></tr>
   </tbody>
 </table>
 
@@ -48,11 +85,12 @@ description: Every member of the map controller, and the errors it throws.
 <table>
   <thead><tr><th><code>MapErrorCode</code></th><th>Meaning</th></tr></thead>
   <tbody>
-    <tr><td><code>notConfigured</code></td><td>No SDK instance when the map was created</td></tr>
-    <tr><td><code>notReady</code></td><td>The map was disposed</td></tr>
+    <tr><td><code>notConfigured</code></td><td>No SDK instance when the map was created, or <code>Proximiio.create</code> replaced it</td></tr>
+    <tr><td><code>notReady</code></td><td>The map was disposed, also during the call</td></tr>
     <tr><td><code>noJourney</code></td><td>A journey call without a running journey</td></tr>
-    <tr><td><code>unknownProposal</code></td><td>The proposal was applied already or is unknown</td></tr>
-    <tr><td><code>invalidArgument</code></td><td>A value was rejected</td></tr>
+    <tr><td><code>unknownProposal</code></td><td>The proposal is unknown or was applied already</td></tr>
+    <tr><td><code>superseded</code></td><td>A later <code>showRoute</code>, <code>clearRoute</code> or <code>startJourney</code> replaced the route call; nothing was drawn</td></tr>
+    <tr><td><code>invalidArgument</code></td><td>A value was rejected (Android; iOS reports rejected values as <code>underlying</code>)</td></tr>
     <tr><td><code>unsupported</code></td><td>iOS without Swift Package Manager</td></tr>
     <tr><td><code>underlying</code></td><td>Another failure in the map library</td></tr>
     <tr><td><code>unknown</code></td><td>A code added after this release</td></tr>

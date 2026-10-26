@@ -15,8 +15,11 @@ enum MapErrorCode {
   /// The order proposal is unknown or was applied already.
   unknownProposal,
 
-  /// A value was rejected.
+  /// A value was rejected (Android; iOS reports rejected values as [underlying]).
   invalidArgument,
+
+  /// A later `showRoute`, `clearRoute` or `startJourney` replaced this route call; nothing was drawn.
+  superseded,
 
   /// Not available on this platform or build (iOS without Swift Package Manager).
   unsupported,

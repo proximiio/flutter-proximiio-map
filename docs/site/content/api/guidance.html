@@ -1,16 +1,58 @@
 <!--
 title: Route guidance types
-description: RouteFollowRules, RouteGuidance, RouteManoeuvre and ManoeuvreKind.
+description: RouteFollowRules, RouteGuidance, RouteManoeuvre and ManoeuvreKind, with defaults and units.
 -->
 
+<h2>RouteFollowRules</h2>
+
+<pre><code class="language-dart">const RouteFollowRules({
+  double? arrivalRadiusMeters,
+  Duration arrivalDwell = const Duration(seconds: 2),
+  double offRouteMeters = 12,
+  int offRouteFixes = 3,
+})</code></pre>
+
 <table>
-  <thead><tr><th>Type</th><th>Fields</th></tr></thead>
+  <thead><tr><th>Field</th><th>Default</th><th>Meaning</th></tr></thead>
   <tbody>
-    <tr><td><code>RouteFollowRules</code></td><td><code>arrivalRadiusMeters</code>, <code>arrivalDwell</code>, <code>offRouteMeters</code>, <code>offRouteFixes</code>; <code>RouteFollowRules.venueWalk</code></td></tr>
-    <tr><td><code>RouteGuidance</code></td><td><code>manoeuvre</code>, <code>nextManoeuvre</code>, <code>distanceToManoeuvreMeters</code>, <code>remainingMeters</code>, <code>traveledMeters</code>, <code>offRouteMeters</code>, <code>isOffRoute</code>, <code>hasArrived</code>, <code>arrivalProgress</code>, <code>text</code></td></tr>
-    <tr><td><code>RouteManoeuvre</code></td><td><code>kind</code>, <code>coordinate</code>, <code>level</code>, <code>legMeters</code>, <code>levelChange</code></td></tr>
-    <tr><td><code>ManoeuvreKind</code></td><td><code>start</code>, <code>continueStraight</code>, <code>turnSlightLeft</code>, <code>turnLeft</code>, <code>turnSharpLeft</code>, <code>turnSlightRight</code>, <code>turnRight</code>, <code>turnSharpRight</code>, <code>levelChange</code>, <code>arrive</code>, <code>unknown</code></td></tr>
+    <tr><td><code>arrivalRadiusMeters</code></td><td><code>null</code>: 3 to 10 m from the position accuracy</td><td>Arrival radius, metres</td></tr>
+    <tr><td><code>arrivalDwell</code></td><td>2 s</td><td>Time within the radius before arrival is reported</td></tr>
+    <tr><td><code>offRouteMeters</code></td><td>12</td><td>Distance from the route that counts as off route, metres</td></tr>
+    <tr><td><code>offRouteFixes</code></td><td>3</td><td>Positions in a row beyond <code>offRouteMeters</code> before off route is reported</td></tr>
   </tbody>
 </table>
 
-<p><code>LevelChange</code> and <code>ComputedRoute</code> are the types of <code>flutter_proximiio</code>.</p>
+<p><code>RouteFollowRules.venueWalk</code> is <code>RouteFollowRules()</code>, the native preset.</p>
+
+<h2>RouteGuidance</h2>
+
+<table>
+  <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>RouteManoeuvre? manoeuvre</code>, <code>RouteManoeuvre? nextManoeuvre</code></td><td>The coming manoeuvre and the one after it</td></tr>
+    <tr><td><code>double distanceToManoeuvreMeters</code></td><td>Metres to <code>manoeuvre</code></td></tr>
+    <tr><td><code>double remainingMeters</code>, <code>double traveledMeters</code></td><td>Metres left to the destination and walked</td></tr>
+    <tr><td><code>double offRouteMeters</code>, <code>bool isOffRoute</code></td><td>Metres from the route; whether the visitor left it. The map does not reroute by itself</td></tr>
+    <tr><td><code>bool hasArrived</code>, <code>double arrivalProgress</code></td><td>Arrival; progress 0 to 1 while it is confirmed</td></tr>
+    <tr><td><code>String? text</code></td><td>The instruction in the map's language (English or Arabic)</td></tr>
+  </tbody>
+</table>
+
+<h2>RouteManoeuvre</h2>
+
+<table>
+  <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>ManoeuvreKind kind</code></td><td>What to do</td></tr>
+    <tr><td><code>Coordinate coordinate</code>, <code>double level</code></td><td>Where, on which floor</td></tr>
+    <tr><td><code>double legMeters</code></td><td>Metres of the leg leading to it</td></tr>
+    <tr><td><code>LevelChange? levelChange</code></td><td>The ride, for <code>ManoeuvreKind.levelChange</code> (a <code>flutter_proximiio</code> type)</td></tr>
+  </tbody>
+</table>
+
+<p>
+  <code>ManoeuvreKind</code>: <code>start</code>, <code>continueStraight</code>, <code>turnSlightLeft</code>,
+  <code>turnLeft</code>, <code>turnSharpLeft</code>, <code>turnSlightRight</code>, <code>turnRight</code>,
+  <code>turnSharpRight</code>, <code>levelChange</code>, <code>arrive</code>, and <code>unknown</code> for a
+  kind added after this release.
+</p>

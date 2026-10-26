@@ -118,7 +118,7 @@ class Journey with ValueEquality {
     for (final stop in json['stops']! as List<Object?>) JourneyStop.fromJson(stop! as Map<String, Object?>),
   ]);
 
-  /// The stops of a journey edited in the Proximi.io Map Editor. Waypoints without a position are
+  /// The stops of a journey edited in Proximi.io Portal. Waypoints without a position are
   /// left out; stop ids are `<journey id>-<index>`.
   factory Journey.fromProximiioJourney(ProximiioJourney journey) => Journey([
     for (final (index, waypoint) in journey.waypoints.indexed)
@@ -288,6 +288,7 @@ class JourneyState with ValueEquality {
     required this.hasArrived,
     required this.isFinished,
     required this.noRouteReasons,
+    this.reorderableStopIds = const [],
     this.deviation,
     this.activeStopId,
     this.detourStopId,
@@ -317,6 +318,20 @@ class JourneyState with ValueEquality {
   /// Stops no route leads to, with the reason (`null` for a reason added after this release).
   final Map<String, NoRouteReason?> noRouteReasons;
 
+  /// Ids of [reorderableStops].
+  final List<String> reorderableStopIds;
+
+  /// The stops a reorder may touch, in walking order: the stops still to walk except one already
+  /// reached and a live detour. [JourneyNavigator.moveStop] and [JourneyNavigator.insertStop] take an
+  /// index into this list, not into `journey.stops`.
+  List<JourneyStop> get reorderableStops {
+    final byId = {for (final stop in journey.stops) stop.id: stop};
+    return [
+      for (final id in reorderableStopIds)
+        if (byId[id] case final stop?) stop,
+    ];
+  }
+
   /// The active stop.
   JourneyStop? get activeStop => journey.stops.where((s) => s.id == activeStopId).firstOrNull;
 
@@ -327,6 +342,7 @@ class JourneyState with ValueEquality {
     deviation,
     activeStopId,
     detourStopId,
+    reorderableStopIds,
     hasArrived,
     isFinished,
     noRouteReasons,

@@ -1592,7 +1592,12 @@ data class MapMsgJourneyState (
   val hasArrived: Boolean,
   val isFinished: Boolean,
   /** Stops no route leads to, with the SDK's `NoRouteReason` name. */
-  val noRouteStopIds: Map<String, String>
+  val noRouteStopIds: Map<String, String>,
+  /**
+   * Ids of the stops a reorder may touch, in walking order: the index space of `moveStop` and
+   * `insertStop`.
+   */
+  val reorderableStopIds: List<String>
 )
  {
   companion object {
@@ -1605,7 +1610,8 @@ data class MapMsgJourneyState (
       val hasArrived = pigeonVar_list[5] as Boolean
       val isFinished = pigeonVar_list[6] as Boolean
       val noRouteStopIds = pigeonVar_list[7] as Map<String, String>
-      return MapMsgJourneyState(journey, overview, deviation, activeStopId, detourStopId, hasArrived, isFinished, noRouteStopIds)
+      val reorderableStopIds = pigeonVar_list[8] as List<String>
+      return MapMsgJourneyState(journey, overview, deviation, activeStopId, detourStopId, hasArrived, isFinished, noRouteStopIds, reorderableStopIds)
     }
   }
   fun toList(): List<Any?> {
@@ -1618,6 +1624,7 @@ data class MapMsgJourneyState (
       hasArrived,
       isFinished,
       noRouteStopIds,
+      reorderableStopIds,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -1628,7 +1635,7 @@ data class MapMsgJourneyState (
       return true
     }
     val other = other as MapMsgJourneyState
-    return MapMessagesPigeonUtils.deepEquals(this.journey, other.journey) && MapMessagesPigeonUtils.deepEquals(this.overview, other.overview) && MapMessagesPigeonUtils.deepEquals(this.deviation, other.deviation) && MapMessagesPigeonUtils.deepEquals(this.activeStopId, other.activeStopId) && MapMessagesPigeonUtils.deepEquals(this.detourStopId, other.detourStopId) && MapMessagesPigeonUtils.deepEquals(this.hasArrived, other.hasArrived) && MapMessagesPigeonUtils.deepEquals(this.isFinished, other.isFinished) && MapMessagesPigeonUtils.deepEquals(this.noRouteStopIds, other.noRouteStopIds)
+    return MapMessagesPigeonUtils.deepEquals(this.journey, other.journey) && MapMessagesPigeonUtils.deepEquals(this.overview, other.overview) && MapMessagesPigeonUtils.deepEquals(this.deviation, other.deviation) && MapMessagesPigeonUtils.deepEquals(this.activeStopId, other.activeStopId) && MapMessagesPigeonUtils.deepEquals(this.detourStopId, other.detourStopId) && MapMessagesPigeonUtils.deepEquals(this.hasArrived, other.hasArrived) && MapMessagesPigeonUtils.deepEquals(this.isFinished, other.isFinished) && MapMessagesPigeonUtils.deepEquals(this.noRouteStopIds, other.noRouteStopIds) && MapMessagesPigeonUtils.deepEquals(this.reorderableStopIds, other.reorderableStopIds)
   }
 
   override fun hashCode(): Int {
@@ -1641,6 +1648,7 @@ data class MapMsgJourneyState (
     result = 31 * result + MapMessagesPigeonUtils.deepHash(this.hasArrived)
     result = 31 * result + MapMessagesPigeonUtils.deepHash(this.isFinished)
     result = 31 * result + MapMessagesPigeonUtils.deepHash(this.noRouteStopIds)
+    result = 31 * result + MapMessagesPigeonUtils.deepHash(this.reorderableStopIds)
     return result
   }
 }
@@ -2693,8 +2701,16 @@ val MapMessagesPigeonMethodCodec = StandardMethodCodec(MapMessagesPigeonCodec())
  * Generated interface from Pigeon that represents a handler of messages from Flutter.
  */
 interface MapRegistryApi {
-  /** Stores [options] and returns the handle to pass to the platform view. */
-  fun prepare(options: MapMsgOptions): Long
+  /**
+   * Stores [options] and returns the handle to pass to the platform view. [isolateToken] is
+   * random per Dart isolate: a new token (after a hot restart) releases the maps of the old one.
+   */
+  fun prepare(options: MapMsgOptions, isolateToken: String): Long
+  /**
+   * Releases the map with [handle], also one whose platform view was never created. Releasing an
+   * unknown or released handle does nothing.
+   */
+  fun release(handle: Long)
 
   companion object {
     /** The codec used by MapRegistryApi. */
@@ -2711,8 +2727,27 @@ interface MapRegistryApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val optionsArg = args[0] as MapMsgOptions
+            val isolateTokenArg = args[1] as String
             val wrapped: List<Any?> = try {
-              listOf(api.prepare(optionsArg))
+              listOf(api.prepare(optionsArg, isolateTokenArg))
+            } catch (exception: Throwable) {
+              MapMessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.flutter_proximiio_map.MapRegistryApi.release$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val handleArg = args[0] as Long
+            val wrapped: List<Any?> = try {
+              api.release(handleArg)
+              listOf(null)
             } catch (exception: Throwable) {
               MapMessagesPigeonUtils.wrapError(exception)
             }
@@ -2730,7 +2765,7 @@ interface MapRegistryApi {
  *
  * Errors: `notConfigured` (no SDK instance: call `Proximiio.create` first), `notReady` (the view
  * is gone), `noJourney`, `unknownProposal`, `invalidArgument`, `noRoute` (details as in
- * flutter_proximiio), `unsupported`.
+ * flutter_proximiio), `superseded` (a later route call replaced this one), `unsupported`.
  *
  * Generated interface from Pigeon that represents a handler of messages from Flutter.
  */
@@ -2780,6 +2815,13 @@ interface MapHostApi {
   fun setJourneyRouteOptions(options: MapMsgRouteOptions, callback: (Result<Unit>) -> Unit)
   fun fitActiveLeg(animated: Boolean)
   fun fitJourney(animated: Boolean)
+  /**
+   * Takes the SDK streams again after the SDK was stopped and started. Sets the map's error when
+   * `Proximiio.create` replaced the instance the map shows.
+   */
+  fun restartSession()
+  /** The route network changed (the SDK reported new features): routes the journey again. */
+  fun journeyRouteNetworkChanged(callback: (Result<Unit>) -> Unit)
   /** Releases the map: the view, the session and a running journey. */
   fun dispose()
 
@@ -3582,6 +3624,39 @@ interface MapHostApi {
               MapMessagesPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.restartSession$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.restartSession()
+              listOf(null)
+            } catch (exception: Throwable) {
+              MapMessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.flutter_proximiio_map.MapHostApi.journeyRouteNetworkChanged$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.journeyRouteNetworkChanged{ result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MapMessagesPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(MapMessagesPigeonUtils.wrapResult(null))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

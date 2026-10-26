@@ -20,8 +20,14 @@ version (see README).
   (`RouteGuidance`, `RouteManoeuvre`, `setGuidanceRules`, `instructionText`).
 - Journeys: `startJourney` returns a `JourneyNavigator` with `state`, `guidance`, `events` (sealed
   `JourneyEvent`), voice `cues`, stop progress, detours, plan edits and reordering proposals.
+  `JourneyState.reorderableStops` is the index space of `moveStop` and `insertStop`;
+  `routeNetworkChanged()` routes the journey again, and the map calls it when the SDK reports new
+  features. `startJourney` calls run one after another and keep the rules of `setGuidanceRules`.
+- The map follows `stop()` / `start()` of its SDK instance and asks for a new map when `Proximiio.create`
+  replaced it.
 - `ProximiioMapException` with `MapErrorCode`; route failures are `ProximiioException`s with
-  `ProximiioErrorCode.noRoute`.
+  `ProximiioErrorCode.noRoute`. A route call replaced by a later one fails with `superseded`;
+  `cameraReady` fails when the map cannot be shown.
 - Documentation site (`docs/site`) in the style of the iOS and Android map docs, for Partner Zone.
 
 ### Changed

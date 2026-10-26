@@ -14,17 +14,26 @@ description: The map widget — its parameters and lifecycle.
 <table>
   <thead><tr><th>Parameter</th><th>Purpose</th></tr></thead>
   <tbody>
-    <tr><td><code>options</code></td><td>How the map looks and behaves; a changed value updates the map</td></tr>
+    <tr><td><code>options</code></td><td>How the map looks and behaves; see <a href="{{root}}api/options.html">MapOptions</a></td></tr>
     <tr><td><code>onMapCreated</code></td><td>Called once with the controller when the native map exists</td></tr>
-    <tr><td><code>gestureRecognizers</code></td><td>Gestures the map takes first; default all</td></tr>
+    <tr><td><code>gestureRecognizers</code></td><td>Gestures the map takes before the widgets around it; <code>null</code> takes every gesture</td></tr>
     <tr><td><code>placeholder</code></td><td>Shown until the platform view is created</td></tr>
   </tbody>
 </table>
 
+<h2>Options</h2>
+
+<ul>
+  <li>A changed <code>options</code> value is sent to the map, also one set before the platform view exists. A rebuild with equal options sends nothing.</li>
+  <li><code>offlinePackageId</code> and <code>initialFraming</code> apply only to a new map.</li>
+  <li><code>backgroundColor</code>: iOS applies a change at once; Android applies it to a new map.</li>
+</ul>
+
 <h2>Lifecycle</h2>
 
 <ul>
-  <li>Create the SDK with <code>Proximiio.create</code> before the widget is built.</li>
-  <li>The controller is valid until the widget is removed; then the native map is released and calls throw <code>MapErrorCode.notReady</code>.</li>
-  <li>iOS and Android only; other platforms show a message.</li>
+  <li>Create the SDK with <code>Proximiio.create</code> before the widget is built. Without it the map shows a notice and <code>cameraReady</code> fails with <code>MapErrorCode.notConfigured</code>.</li>
+  <li>The map follows <code>stop()</code> and <code>start()</code> of its SDK instance. After <code>Proximiio.create</code> replaced the instance, rebuild the widget with a new <code>Key</code>.</li>
+  <li>Removing the widget releases the native map, also when its platform view was never created. Controller calls then throw <code>MapErrorCode.notReady</code>.</li>
+  <li>iOS and Android only; on other platforms the widget shows a message.</li>
 </ul>

@@ -391,6 +391,7 @@ class MapMsgJourneyState {
     required this.hasArrived,
     required this.isFinished,
     required this.noRouteStopIds,
+    required this.reorderableStopIds,
   });
 
   MapMsgJourney journey;
@@ -403,6 +404,10 @@ class MapMsgJourneyState {
 
   /// Stops no route leads to, with the SDK's `NoRouteReason` name.
   Map<String, String> noRouteStopIds;
+
+  /// Ids of the stops a reorder may touch, in walking order: the index space of `moveStop` and
+  /// `insertStop`.
+  List<String> reorderableStopIds;
 }
 
 enum MapMsgOrderOrigin { activeStop, visitor }
@@ -530,15 +535,20 @@ class MapMsgJourneyCue extends MapMsgJourneyEvent {
 /// Global: prepares a map before its platform view exists.
 @HostApi()
 abstract class MapRegistryApi {
-  /// Stores [options] and returns the handle to pass to the platform view.
-  int prepare(MapMsgOptions options);
+  /// Stores [options] and returns the handle to pass to the platform view. [isolateToken] is
+  /// random per Dart isolate: a new token (after a hot restart) releases the maps of the old one.
+  int prepare(MapMsgOptions options, String isolateToken);
+
+  /// Releases the map with [handle], also one whose platform view was never created. Releasing an
+  /// unknown or released handle does nothing.
+  void release(int handle);
 }
 
 /// One map, addressed by its handle as the channel suffix.
 ///
 /// Errors: `notConfigured` (no SDK instance: call `Proximiio.create` first), `notReady` (the view
 /// is gone), `noJourney`, `unknownProposal`, `invalidArgument`, `noRoute` (details as in
-/// flutter_proximiio), `unsupported`.
+/// flutter_proximiio), `superseded` (a later route call replaced this one), `unsupported`.
 @HostApi()
 abstract class MapHostApi {
   void setOptions(MapMsgOptions options);
@@ -657,6 +667,14 @@ abstract class MapHostApi {
   void fitActiveLeg(bool animated);
 
   void fitJourney(bool animated);
+
+  /// Takes the SDK streams again after the SDK was stopped and started. Sets the map's error when
+  /// `Proximiio.create` replaced the instance the map shows.
+  void restartSession();
+
+  /// The route network changed (the SDK reported new features): routes the journey again.
+  @async
+  void journeyRouteNetworkChanged();
 
   /// Releases the map: the view, the session and a running journey.
   void dispose();

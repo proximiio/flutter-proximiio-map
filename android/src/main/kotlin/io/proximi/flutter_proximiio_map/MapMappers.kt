@@ -184,6 +184,10 @@ internal object MapMappers {
   )
 
   /** The object or class name of a sealed case, as the iOS case name (`TurnLeft` → `turnLeft`). */
+  /**
+   * The case name of a sealed SDK value (`StartOffNetwork` → `startOffNetwork`). Only for SDK types: the
+   * SDK's consumer rules keep their names in release builds; the map library's are not kept.
+   */
   fun caseName(value: Any): String = value::class.simpleName?.replaceFirstChar { it.lowercaseChar() } ?: "unknown"
 
   fun route(value: ComputedRoute) = MapMsgRoute(
@@ -216,10 +220,24 @@ internal object MapMappers {
     offRouteFixes = value.offRouteFixes.toInt(),
   )
 
+  /** Spelled out: release builds obfuscate the map library's class names, so `caseName` would send garbage. */
+  private fun manoeuvreKind(kind: RouteManoeuvre.Kind): String = when (kind) {
+    RouteManoeuvre.Kind.Start -> "start"
+    RouteManoeuvre.Kind.ContinueStraight -> "continueStraight"
+    RouteManoeuvre.Kind.TurnSlightLeft -> "turnSlightLeft"
+    RouteManoeuvre.Kind.TurnLeft -> "turnLeft"
+    RouteManoeuvre.Kind.TurnSharpLeft -> "turnSharpLeft"
+    RouteManoeuvre.Kind.TurnSlightRight -> "turnSlightRight"
+    RouteManoeuvre.Kind.TurnRight -> "turnRight"
+    RouteManoeuvre.Kind.TurnSharpRight -> "turnSharpRight"
+    is RouteManoeuvre.Kind.LevelChange -> "levelChange"
+    RouteManoeuvre.Kind.Arrive -> "arrive"
+  }
+
   private fun manoeuvre(value: RouteManoeuvre): MapMsgManoeuvre {
     val kind = value.kind
     return MapMsgManoeuvre(
-      kind = caseName(kind),
+      kind = manoeuvreKind(kind),
       coordinate = msg(value.coordinate),
       level = value.floor.level,
       legMeters = value.legMeters,

@@ -86,10 +86,19 @@ final class MapController: NSObject {
   private var proposals: [Int64: JourneyOrderProposal] = [:]
   private var nextProposalId: Int64 = 1
   private var disposed = false
+  private weak var registry: MapRegistry?
+  private var journeyStateScheduled = false
 
-  init(handle: Int64, options: MapOptions, sdk: Proximiio, messenger: FlutterBinaryMessenger) {
+  /// The rules the app set; a journey's end clears the session's, so they are put back.
+  private var guidanceRules: RouteFollowRules?
+
+  /// Bumped by every route call, so a route that finishes computing after a newer call is not drawn.
+  private var routeGeneration = 0
+
+  init(handle: Int64, options: MapOptions, sdk: Proximiio, registry: MapRegistry) {
     self.handle = handle
-    self.messenger = messenger
+    self.registry = registry
+    messenger = registry.messenger
     mapController = ProximiioMapViewController(sdk: sdk, options: options)
     container = MapContainerView(mapController: mapController)
     super.init()
@@ -232,6 +241,8 @@ final class MapController: NSObject {
     completion: @escaping (Result<MapMsgRoute, Error>) -> Void
   ) {
     let sdk = session.sdk
+    routeGeneration += 1
+    let generation = routeGeneration
     Task { @MainActor in
       do {
         let route = try await sdk.computeRoute(
@@ -241,6 +252,15 @@ final class MapController: NSObject {
           toLevel: toLevel,
           options: MapMappers.routeOptions(options)
         )
+        guard generation == self.routeGeneration, !self.disposed else {
+          throw MapFlutterError(
+            code: self.disposed ? "notReady" : "superseded",
+            message: self.disposed
+              ? "The map was disposed."
+              : "A later showRoute, clearRoute or startJourney replaced this route.",
+            details: nil
+          )
+        }
         self.session.setRoute(route)
         completion(.success(MapMappers.route(route)))
       } catch {
@@ -249,10 +269,14 @@ final class MapController: NSObject {
     }
   }
 
-  func clearRoute() throws { session.clearRoute() }
+  func clearRoute() throws {
+    routeGeneration += 1
+    session.clearRoute()
+  }
 
   func setGuidanceRules(rules: MapMsgFollowRules?) throws {
-    session.guidanceRules = rules.map(MapMappers.followRules)
+    guidanceRules = rules.map(MapMappers.followRules)
+    session.guidanceRules = guidanceRules
   }
 
   func instructionText(destinationTitle: String?) throws -> String? {
@@ -286,11 +310,13 @@ final class MapController: NSObject {
     completion: @escaping (Result<Void, Error>) -> Void
   ) {
     endNavigator()
+    // The journey draws its own legs; a route still computing must not replace them.
+    routeGeneration += 1
     let navigator = JourneyNavigator(
       session: session,
       journey: MapMappers.journey(journey),
       rules: MapMappers.rules(rules),
-      guidanceRules: session.guidanceRules ?? .venueWalk
+      guidanceRules: guidanceRules ?? .venueWalk
     )
     self.navigator = navigator
     observe(navigator)
@@ -308,8 +334,10 @@ final class MapController: NSObject {
       navigator.$deviation.map { _ in () }.eraseToAnyPublisher(),
       navigator.$noRouteReasons.map { _ in () }.eraseToAnyPublisher(),
     ]
+    // @Published emits in willSet, before the navigator holds the new value, and one change sets
+    // several properties. The state is read once all of them are set, on the next main-queue turn.
     Publishers.MergeMany(publishers)
-      .sink { [weak self] in MainActor.assumeIsolated { self?.sendJourneyState() } }
+      .sink { [weak self] in MainActor.assumeIsolated { self?.scheduleJourneyState() } }
       .store(in: &navigatorSubscriptions)
     navigator.$guidance
       .sink { [weak self] guidance in
@@ -342,7 +370,8 @@ final class MapController: NSObject {
       detourStopId: navigator.detourStop?.id,
       hasArrived: navigator.hasArrived,
       isFinished: navigator.isFinished,
-      noRouteStopIds: navigator.noRouteReasons.mapValues { MapMappers.caseName($0) }
+      noRouteStopIds: navigator.noRouteReasons.mapValues { MapMappers.caseName($0) },
+      reorderableStopIds: navigator.reorderableStops.map(\.id)
     )
   }
 
@@ -351,9 +380,25 @@ final class MapController: NSObject {
     send(MapMsgJourneyStateChanged(state: state(of: navigator)))
   }
 
+  private func scheduleJourneyState() {
+    guard !journeyStateScheduled else { return }
+    journeyStateScheduled = true
+    DispatchQueue.main.async { [weak self] in
+      MainActor.assumeIsolated {
+        guard let self else { return }
+        self.journeyStateScheduled = false
+        self.sendJourneyState()
+      }
+    }
+  }
+
   private func endNavigator() {
-    navigator?.end()
-    navigator?.onCue = nil
+    if let navigator {
+      navigator.end()
+      navigator.onCue = nil
+      // end() clears the session's rules; the app's rules apply to routes again.
+      session.guidanceRules = guidanceRules
+    }
     navigator = nil
     navigatorSubscriptions.removeAll()
     navigatorEventsTask?.cancel()
@@ -421,11 +466,12 @@ final class MapController: NSObject {
     runJourney(completion) { await $0.update(to: MapMappers.journey(journey)) }
   }
 
-  private func keep(_ proposal: JourneyOrderProposal?) -> MapMsgProposal? {
+  /// A proposal Dart can apply by id; one already applied (`applicable` false) is not kept.
+  private func keep(_ proposal: JourneyOrderProposal?, applicable: Bool = true) -> MapMsgProposal? {
     guard let proposal else { return nil }
     let id = nextProposalId
     nextProposalId += 1
-    proposals[id] = proposal
+    if applicable { proposals[id] = proposal }
     return MapMsgProposal(
       id: id,
       order: proposal.order,
@@ -469,11 +515,17 @@ final class MapController: NSObject {
   }
 
   func replanFromHere(pinnedStopIds: [String], completion: @escaping (Result<MapMsgProposal?, Error>) -> Void) {
-    runJourney(completion) { navigator in self.keep(await navigator.replanFromHere(pinning: Set(pinnedStopIds))) }
+    runJourney(completion) { navigator in
+      self.keep(await navigator.replanFromHere(pinning: Set(pinnedStopIds)), applicable: false)
+    }
   }
 
   func setJourneyRouteOptions(options: MapMsgRouteOptions, completion: @escaping (Result<Void, Error>) -> Void) {
     runJourney(completion) { await $0.setRouteOptions(MapMappers.routeOptions(options)) }
+  }
+
+  func journeyRouteNetworkChanged(completion: @escaping (Result<Void, Error>) -> Void) {
+    runJourney(completion) { await $0.routeNetworkChanged() }
   }
 
   func fitActiveLeg(animated: Bool) throws { try requireNavigator().fitActiveLeg(animated: animated) }
@@ -482,18 +534,37 @@ final class MapController: NSObject {
 
   // MARK: Lifecycle
 
+  /// The SDK streams finish at `stop()`; after a restart of the same instance the session takes them again.
+  func restartSession() throws {
+    guard MainActor.assumeIsolated({ Proximiio.shared }) === session.sdk else {
+      throw MapFlutterError(
+        code: "notConfigured",
+        message: "Proximiio.create replaced the SDK instance this map shows; rebuild the map.",
+        details: nil
+      )
+    }
+    session.start()
+  }
+
   func dispose() throws {
+    releaseMap()
+  }
+
+  func releaseMap() {
     guard !disposed else { return }
     disposed = true
     endNavigator()
     subscriptions.removeAll()
     session.onFeatureTap = nil
+    mapEvents.onAttach = nil
+    journeyEvents.onAttach = nil
     mapController.dismantle()
     if mapController.parent != nil {
       mapController.willMove(toParent: nil)
       mapController.removeFromParent()
     }
-    MapHostApiSetup.setUp(binaryMessenger: messenger, api: nil, messageChannelSuffix: String(handle))
+    MapChannels.release(messenger: messenger, handle: handle)
+    registry?.removed(handle)
   }
 
   // MARK: Errors
@@ -522,4 +593,6 @@ extension MapController: @preconcurrency FlutterPlatformView {
 }
 
 extension MapController: @preconcurrency MapHostApi {}
+
+extension MapController: @preconcurrency ReleasableMap {}
 #endif

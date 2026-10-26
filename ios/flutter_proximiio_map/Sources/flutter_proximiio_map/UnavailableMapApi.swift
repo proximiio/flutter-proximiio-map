@@ -1,12 +1,15 @@
 // Generated from MapMessages.g.swift by tool/generate_unavailable_api.py; do not edit.
 import Foundation
 
-/// Answers every map call with one error (no map library, or no SDK instance).
+/// Answers every map call with one error (no map library, or no SDK instance). `dispose()`
+/// succeeds and runs `onDispose`, so the notice can release its channels.
 final class UnavailableMapApi: MapHostApi {
   private let error: MapFlutterError
+  private let onDispose: () -> Void
 
-  init(error: MapFlutterError) {
+  init(error: MapFlutterError, onDispose: @escaping () -> Void) {
     self.error = error
+    self.onDispose = onDispose
   }
 
   func setOptions(options: MapMsgOptions) throws { throw error }
@@ -52,5 +55,7 @@ final class UnavailableMapApi: MapHostApi {
   func setJourneyRouteOptions(options: MapMsgRouteOptions, completion: @escaping (Result<Void, Error>) -> Void) { completion(.failure(error)) }
   func fitActiveLeg(animated: Bool) throws { throw error }
   func fitJourney(animated: Bool) throws { throw error }
-  func dispose() throws { throw error }
+  func restartSession() throws { throw error }
+  func journeyRouteNetworkChanged(completion: @escaping (Result<Void, Error>) -> Void) { completion(.failure(error)) }
+  func dispose() throws { onDispose() }
 }

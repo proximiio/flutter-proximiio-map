@@ -34,7 +34,7 @@ description: Add flutter_proximiio_map, turn on Swift Package Manager for iOS, a
   iOS 15.
 </p>
 
-<div class="doc-aside doc-aside-caution"><p>
+<div class="doc-aside doc-aside-note"><p>
   Built through CocoaPods, the plugin compiles, but every map shows a notice instead of the map and
   each controller call throws <code>MapErrorCode.unsupported</code>.
 </p></div>
@@ -54,7 +54,12 @@ description: Add flutter_proximiio_map, turn on Swift Package Manager for iOS, a
 
 <h2>Verify</h2>
 
-<p>Run the example app: <code>cd example &amp;&amp; flutter run --dart-define-from-file=env.json</code>. The venue appears with the floor picker on the right.</p>
+<p>
+  Run the example app: in <code>example/</code>, copy <code>env.example.json</code> to
+  <code>env.json</code> and set <code>PROXIMIIO_TOKEN</code> (and <code>PROXIMIIO_API_BASE_URL</code> for
+  another API host), then run <code>flutter run --dart-define-from-file=env.json</code>. The venue
+  appears with the floor picker on the right.
+</p>
 
 <h2>Next</h2>
 

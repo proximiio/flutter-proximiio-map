@@ -71,7 +71,46 @@ class FakeMapApi extends MapHostApi {
 
   @override
   Future<void> dispose() => _answer('dispose', null);
+
+  @override
+  Future<void> restartSession() => _answer('restartSession', null);
+
+  @override
+  Future<void> journeyRouteNetworkChanged() => _answer('journeyRouteNetworkChanged', null);
+
+  @override
+  Future<void> endJourney() => _answer('endJourney', null);
 }
+
+/// The SDK streams the map follows; every other member is unused.
+class FakeSdk implements Proximiio {
+  final states = StreamController<ProximiioState>.broadcast();
+  final venueChanges = StreamController<VenueDataChange>.broadcast();
+
+  @override
+  Stream<ProximiioState> get stateChanges => states.stream;
+
+  @override
+  Stream<VenueDataChange> get venueDataChanges => venueChanges.stream;
+
+  Future<void> close() async {
+    await states.close();
+    await venueChanges.close();
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+MapMsgStop _stop(String id, MapMsgStopState state) => MapMsgStop(
+  id: id,
+  title: id.toUpperCase(),
+  coordinate: MapMsgCoordinate(latitude: 0, longitude: 0),
+  kind: MapMsgStopKind.planned,
+  state: state,
+);
+
+const _journey = Journey([JourneyStop(id: 'a', title: 'A', coordinate: Coordinate(latitude: 0, longitude: 0))]);
 
 void main() {
   group('options', () {
@@ -299,6 +338,136 @@ void main() {
       expect(await navigator.apply(proposal!), isTrue);
       expect(api.calls, ['startJourney(1, 8.0)', 'proposeOrder', 'applyProposal(7)']);
       await controller.dispose();
+    });
+
+    test('the session is taken again only after the SDK was stopped and started', () async {
+      final sdk = FakeSdk();
+      final controller = createMapController(1, api: api, events: events.stream, sdk: () async => sdk);
+      await pumpEventQueue();
+
+      // A start() of a running SDK changes nothing.
+      sdk.states.add(ProximiioState.running);
+      await pumpEventQueue();
+      expect(api.calls, isEmpty);
+
+      sdk.states
+        ..add(ProximiioState.authenticated)
+        ..add(ProximiioState.running);
+      await pumpEventQueue();
+      expect(api.calls, ['restartSession']);
+
+      api.failWith = PlatformException(code: 'notConfigured', message: 'rebuild the map');
+      sdk.states
+        ..add(ProximiioState.idle)
+        ..add(ProximiioState.running);
+      await pumpEventQueue();
+      expect(controller.lastError.value, 'rebuild the map');
+      await controller.dispose();
+      await sdk.close();
+    });
+
+    test('a map that cannot be shown fails cameraReady instead of waiting', () async {
+      final controller = createMapController(1, api: api, events: events.stream);
+      events.addError(PlatformException(code: 'unsupported', message: 'needs Swift Package Manager'));
+
+      await expectLater(
+        controller.cameraReady,
+        throwsA(isA<ProximiioMapException>().having((e) => e.code, 'code', MapErrorCode.unsupported)),
+      );
+      expect(controller.lastError.value, 'needs Swift Package Manager');
+      await controller.dispose();
+    });
+
+    test('new features route the journey again; end() forgets the journey', () async {
+      final sdk = FakeSdk();
+      final controller = createMapController(
+        1,
+        api: api,
+        events: events.stream,
+        journeyEvents: () => const Stream.empty(),
+        sdk: () async => sdk,
+      );
+      await pumpEventQueue();
+      final navigator = await controller.startJourney(_journey);
+
+      sdk.venueChanges
+        ..add(const VenueDataChange({VenueDataKind.amenities}))
+        ..add(const VenueDataChange({VenueDataKind.features}));
+      await pumpEventQueue();
+      expect(api.calls, ['startJourney(1, null)', 'journeyRouteNetworkChanged']);
+
+      await navigator.end();
+      expect(controller.journey, isNull);
+      await expectLater(
+        navigator.advance(),
+        throwsA(isA<ProximiioMapException>().having((e) => e.code, 'code', MapErrorCode.noJourney)),
+      );
+      await controller.dispose();
+      await sdk.close();
+    });
+
+    test('a paused listener holds neither the next journey nor dispose', () async {
+      final journeyEvents = StreamController<MapMsgJourneyEvent>.broadcast();
+      final controller = createMapController(
+        1,
+        api: api,
+        events: events.stream,
+        journeyEvents: () => journeyEvents.stream,
+      );
+      final first = await controller.startJourney(_journey);
+      final subscription = first.events.listen((_) {})..pause();
+
+      final second = await controller.startJourney(_journey).timeout(const Duration(seconds: 1));
+      await controller.dispose().timeout(const Duration(seconds: 1));
+
+      expect(identical(first, second), isFalse);
+      expect(api.calls, ['startJourney(1, null)', 'startJourney(1, null)', 'dispose']);
+      await subscription.cancel();
+      await journeyEvents.close();
+    });
+
+    test('journeys start one after another', () async {
+      final controller = createMapController(
+        1,
+        api: api,
+        events: events.stream,
+        journeyEvents: () => const Stream.empty(),
+      );
+      final starts = [controller.startJourney(_journey), controller.startJourney(_journey)];
+
+      final navigators = await Future.wait(starts);
+      expect(identical(controller.journey, navigators.last), isTrue);
+      expect(api.calls, ['startJourney(1, null)', 'startJourney(1, null)']);
+      await controller.dispose();
+    });
+
+    test('the journey state carries the stops a reorder may touch', () {
+      final state = fromMsgJourneyState(
+        MapMsgJourneyState(
+          journey: MapMsgJourney(
+            stops: [
+              _stop('a', MapMsgStopState.done),
+              _stop('b', MapMsgStopState.skipped),
+              _stop('c', MapMsgStopState.active),
+              _stop('d', MapMsgStopState.pending),
+            ],
+          ),
+          overview: MapMsgOverview(
+            remainingStopIds: const ['c', 'd'],
+            legs: const [],
+            remainingMeters: 0,
+            etaSeconds: 0,
+            unmeasuredLegCount: 0,
+            unreachableStopIds: const [],
+          ),
+          hasArrived: false,
+          isFinished: false,
+          noRouteStopIds: const {},
+          reorderableStopIds: const ['c', 'd'],
+        ),
+      );
+
+      expect(state.reorderableStops.map((s) => s.id), ['c', 'd']);
     });
   });
 }

@@ -15,17 +15,23 @@ lines = [
     "// Generated from MapMessages.g.swift by tool/generate_unavailable_api.py; do not edit.",
     "import Foundation",
     "",
-    "/// Answers every map call with one error (no map library, or no SDK instance).",
+    "/// Answers every map call with one error (no map library, or no SDK instance). `dispose()`",
+    "/// succeeds and runs `onDispose`, so the notice can release its channels.",
     "final class UnavailableMapApi: MapHostApi {",
     "  private let error: MapFlutterError",
+    "  private let onDispose: () -> Void",
     "",
-    "  init(error: MapFlutterError) {",
+    "  init(error: MapFlutterError, onDispose: @escaping () -> Void) {",
     "    self.error = error",
+    "    self.onDispose = onDispose",
     "  }",
     "",
 ]
 for line in (l.strip() for l in body.splitlines()):
     if not line.startswith("func "):
+        continue
+    if line.startswith("func dispose()"):
+        lines.append("  " + line + " { onDispose() }")
         continue
     suffix = " { completion(.failure(error)) }" if "completion: @escaping" in line else " { throw error }"
     lines.append("  " + line + suffix)
@@ -40,11 +46,17 @@ out = [
     "// Generated from MapMessages.g.kt by tool/generate_unavailable_api.py; do not edit.",
     "package io.proximi.flutter_proximiio_map",
     "",
-    "/** Answers every map call with one error (no SDK instance, or no options). */",
-    "internal class UnavailableMapApi(private val error: MapFlutterError) : MapHostApi {",
+    "/**",
+    " * Answers every map call with one error (no SDK instance, or no options). `dispose()` succeeds and",
+    " * runs [onDispose], so the notice can release its channels.",
+    " */",
+    "internal class UnavailableMapApi(private val error: MapFlutterError, private val onDispose: () -> Unit) : MapHostApi {",
 ]
 for line in (l.strip() for l in interface.splitlines()):
     if not line.startswith("fun "):
+        continue
+    if line.startswith("fun dispose()"):
+        out.append("  override " + line + " = onDispose()")
         continue
     if "callback: (Result<" in line:
         out.append("  override " + line + " = callback(Result.failure(error))")

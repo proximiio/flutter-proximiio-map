@@ -127,7 +127,8 @@ class MapFeatures with ValueEquality {
   List<Object?> get props => [toggles, _none];
 }
 
-/// Space the map keeps free of its own content (camera framing, logo, attribution).
+/// Space the map keeps free of its own content: the camera framing, and on iOS also the logo and the
+/// attribution (Android keeps them at MapLibre's default margins).
 class MapContentInsets with ValueEquality {
   /// No insets.
   const MapContentInsets.none() : kind = 0, insets = EdgeInsetsDirectional.zero;
@@ -206,7 +207,7 @@ class RouteLineStyle with ValueEquality {
   List<Object?> get props => [color, toColor, completedColor, width];
 }
 
-/// The markers at the start and end of the route and of journey legs.
+/// The pins at the route's floor changes.
 class RouteMarkerStyle with ValueEquality {
   /// Creates a marker style.
   const RouteMarkerStyle({
@@ -303,7 +304,8 @@ class MapOptions with ValueEquality {
   /// Space kept free of map content.
   final MapContentInsets contentInsets;
 
-  /// Draw amenity icons.
+  /// Load the amenity icons. `false` skips that request, and a style that uses them draws a placeholder;
+  /// to hide amenity icons use `MapFeatures.only(MapLayerToggles(amenities: false))`.
   final bool amenities;
 
   /// Style used when the organisation style cannot be loaded (native default: the MapLibre demo tiles).
@@ -312,32 +314,36 @@ class MapOptions with ValueEquality {
   /// Zoom for [ProximiioMapController.recentre] (native default 18.5).
   final double? recentreZoom;
 
-  /// An installed offline package to take the style from.
+  /// An installed offline package to take the style from. Read when the map starts. When the package
+  /// cannot be read, [ProximiioMapController.lastError] says so and the style comes from the API.
   final String? offlinePackageId;
 
   /// The map's controls; `null` keeps the default.
   final MapChrome? chrome;
 
-  /// The route line; `null` keeps the default.
+  /// The route line; `null` draws it as the organisation style says. A [RouteLineStyle] replaces the
+  /// style's route line.
   final RouteLineStyle? routeLineStyle;
 
-  /// Route markers; `null` keeps the default.
+  /// The pins at the route's floor changes; `null` keeps the default.
   final RouteMarkerStyle? routeMarkers;
 
   /// Geofence style; `null` keeps the default.
   final GeofenceStyle? geofenceStyle;
 
-  /// The first camera position.
+  /// The first camera position. Read when the map opens.
   final InitialFraming initialFraming;
 
-  /// Language of feature titles and guidance text (`en`, `ar`); `null` follows the device.
+  /// Language of feature titles, floor names and guidance text (`en`, `ar`); `null` follows the app's
+  /// display language.
   final String? language;
 
   /// Direction of the dot.
   final HeadingMode heading;
 
-  /// Colour behind the map tiles; `null` keeps the default (transparent). On Android an opaque
-  /// colour makes the map render to a `SurfaceView`, which Flutter composes more slowly.
+  /// Colour behind the map tiles; `null` keeps the default (transparent). iOS applies a change at once;
+  /// Android applies it to a new map. On Android an opaque colour makes the map render to a
+  /// `SurfaceView`, which Flutter composes more slowly.
   final Color? backgroundColor;
 
   @override

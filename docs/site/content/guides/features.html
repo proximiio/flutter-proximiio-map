@@ -13,7 +13,11 @@ const MapOptions(features: MapFeatures.none());</code></pre>
 
 <h2>Amenity icons</h2>
 
-<p><code>MapOptions(amenities: false)</code> hides the amenity icons of POIs.</p>
+<p>
+  <code>MapOptions(amenities: false)</code> skips loading the amenity icons; a style that uses them then
+  draws a placeholder. To hide the amenity icons, use
+  <code>MapFeatures.only(MapLayerToggles(amenities: false))</code>.
+</p>
 
 <h2>Hide features</h2>
 
