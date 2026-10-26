@@ -32,3 +32,6 @@ migrate_working_dir/
 
 # Docs site build output
 /docs/site/dist/
+
+# Local dependency overrides, e.g. a flutter_proximiio checkout
+pubspec_overrides.yaml

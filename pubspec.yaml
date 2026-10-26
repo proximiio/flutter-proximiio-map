@@ -12,16 +12,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # The branch until flutter_proximiio is tagged; the release pins the 6.0.0-beta.1 tag.
+  # Apps must use this exact URL and ref, or pub sees two packages. To develop against a local
+  # checkout, override it in a git-ignored pubspec_overrides.yaml.
   flutter_proximiio:
     git:
       url: https://github.com/proximiio/flutter-proximiio
-      ref: v6-migration
-
-dependency_overrides:
-  # Development against the sibling checkout; remove before tagging a release.
-  flutter_proximiio:
-    path: ../flutter-proximiio
+      ref: 6.0.0-beta.1
 
 dev_dependencies:
   flutter_test:

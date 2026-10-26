@@ -7,6 +7,8 @@ version (see README).
 
 ## [Unreleased]
 
+## [6.0.0-beta.1] - 2026-10-26
+
 ### Added
 - `ProximiioMap` widget: the native Proximi.io map in a platform view, on the SDK instance of
   `flutter_proximiio`.
@@ -36,6 +38,7 @@ version (see README).
   callbacks are removed; see the migration guide (`docs/site/content/reference/migration.html`).
 - BREAKING: depends on `flutter_proximiio` 6.0.0-beta.1; minimum platforms are iOS 15 and Android API 26. On
   iOS the map needs Flutter's Swift Package Manager support.
+- The example app uses the UIScene lifecycle on iOS (Flutter 3.38 or newer).
 
 ### Removed
 - The `webview_flutter` dependency.

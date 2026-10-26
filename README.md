@@ -45,6 +45,9 @@ The plugin's `Package.swift` pulls `proximiio/proximiio-map-ios-binary` and the 
 CocoaPods, the plugin compiles, but the map shows a notice and controller calls throw
 `MapErrorCode.unsupported`. The iOS map pins MapLibre 6.29.0 exactly.
 
+The map works with either iOS lifecycle; for the UIScene lifecycle that iOS 27 requires, see the
+`flutter_proximiio` README.
+
 ### Android
 
 The map comes from `https://maven.eu.proximi.fi/releases/`, the repository the SDK uses. Nothing else is
@@ -94,7 +97,27 @@ cp env.example.json env.json   # put your application token in env.json (gitigno
 flutter run --dart-define-from-file=env.json
 ```
 
+The example uses Swift Package Manager and the UIScene lifecycle on iOS (Flutter 3.38 or newer). Clone the
+repository into a directory named `flutter_proximiio_map`:
+
+```sh
+git clone https://github.com/proximiio/flutter-proximiio-map flutter_proximiio_map
+```
+
+Flutter adds the plugin's Swift package to the example's Xcode project under the checkout's directory
+name. When that name differs from the package name, Xcode stops resolving packages with
+`unable to override package 'flutter_proximiio_map'` (seen with Flutter 3.47 and Xcode 27).
+
 ## Development
+
+To work against a local `flutter_proximiio` checkout, override the dependency in a git-ignored
+`pubspec_overrides.yaml` in the repository root, and in `example/` with the path `../../flutter_proximiio`:
+
+```yaml
+dependency_overrides:
+  flutter_proximiio:
+    path: ../flutter_proximiio
+```
 
 The bridge is generated with [Pigeon](https://pub.dev/packages/pigeon) from `pigeons/messages.dart`:
 
