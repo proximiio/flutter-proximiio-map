@@ -191,6 +191,11 @@ else
   warn "bundle.json records HEAD of $ROOT as the source commit"
 fi
 
+# The exporter rejects a product id Partner Zone does not know before it reads the docs; say so
+# here, so that failure is not taken for a docs problem.
+grep -q "'$PRODUCT'" "$VENDORED_EXPORTER" \
+  || die "product id \"$PRODUCT\" is not in the vendored exporter's product list yet — Partner Zone has to add it (coordination/inbox/proximiio-partner-zone), then re-vendor the exporter; the docs are not the problem"
+
 BASE="docs-bundle-$PRODUCT-$VERSION.tar.gz"
 mkdir -p "$OUT"
 rm -f "$OUT/$BASE" "$OUT/$BASE.sha256" "$OUT/$BASE.minisig"

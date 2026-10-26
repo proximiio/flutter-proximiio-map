@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-/* Proximi.io Android SDK v6 — documentation site builder.
+/* Proximi.io Flutter map (flutter_proximiio_map) — documentation site builder.
  *
  * Zero dependencies, Node >= 18, no network. Reads `nav.mjs` plus the body
  * fragments under `content/` and writes a complete static site to `dist/`.
  *
  *   node docs/site/build.mjs
- *   node docs/site/build.mjs --assistant http://127.0.0.1:8787   (docs assistant panel on)
  *
  * Design notes
  * ------------
@@ -33,74 +32,13 @@ const { NAV, SITE } = await import(pathToFileURL(path.join(HERE, "nav.mjs")).hre
 
 const warnings = [];
 
-// The only argument is --assistant. An unrecognised argument is loud, so a typo
-// does not silently build without the panel.
+// The builder takes no arguments. The docs assistant panel of the iOS and Android builders is left
+// out: the assistant server has no Flutter corpus yet.
 const args = process.argv.slice(2);
-let assistantArg = null;
-const unknown = [];
-for (let i = 0; i < args.length; i++) {
-  const a = args[i];
-  if (a === "--assistant" && args[i + 1] && !args[i + 1].startsWith("--")) assistantArg = args[++i];
-  else if (a.startsWith("--assistant=")) assistantArg = a.slice("--assistant=".length);
-  else unknown.push(a);
-}
-if (unknown.length) {
-  console.error(`build.mjs: unknown argument${unknown.length === 1 ? "" : "s"} ${unknown.join(", ")}`);
-  console.error("usage: node docs/site/build.mjs [--assistant <url>]");
+if (args.length) {
+  console.error(`build.mjs: unknown argument${args.length === 1 ? "" : "s"} ${args.join(", ")}`);
+  console.error("usage: node docs/site/build.mjs");
   process.exit(2);
-}
-
-/* Docs assistant panel — OFF unless an endpoint is given, by `--assistant <url>`
- * or DOCS_ASSISTANT_URL (the flag wins). Ported from the iOS builder. Off, the
- * output is byte-identical to a build without this feature: no tag is emitted
- * and assets/assistant.* is not copied to dist/. On, every page links
- * assets/assistant.css + .js (the same two files in docs/site and
- * docs/map-site) and gets a config object.
- *
- * The assistant server answers Android questions on its /android route, so an
- * endpoint given without a path gets "/android" appended
- * (http://127.0.0.1:8787 -> http://127.0.0.1:8787/android). An endpoint with a
- * path is used as given.
- *
- * Citations of the other docs site need that site's dist/ root as an absolute
- * URL: DOCS_ASSISTANT_SDK_BASE / DOCS_ASSISTANT_MAP_BASE. For a local endpoint
- * (127.0.0.1 / localhost) they default to the paths the assistant server
- * serves both Android sites at. Citations of this site always stay relative. */
-const ASSISTANT_SITE = "sdk";
-const ASSISTANT_URL = (assistantArg ?? process.env.DOCS_ASSISTANT_URL ?? "").trim().replace(/\/+$/, "");
-const ASSISTANT_FILES = ["assistant.js", "assistant.css"];
-let ASSISTANT = null;
-if (ASSISTANT_URL) {
-  const m = /^(https?:\/\/[^\s/]+)(\/\S*)?$/i.exec(ASSISTANT_URL);
-  if (!m) {
-    console.error(`build.mjs: assistant endpoint must be an http(s) URL, got "${ASSISTANT_URL}"`);
-    process.exit(2);
-  }
-  const origin = m[1];
-  const local = /^https?:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i.test(origin);
-  const baseFor = (envName, siteDir) => {
-    const v = (process.env[envName] || "").trim();
-    if (v) return v.endsWith("/") ? v : `${v}/`;
-    return local ? `${origin}/proximiio-android-sdk-v6/docs/${siteDir}/dist/` : null;
-  };
-  ASSISTANT = {
-    endpoint: m[2] ? ASSISTANT_URL : `${ASSISTANT_URL}/android`,
-    site: ASSISTANT_SITE,
-    bases: {
-      sdk: baseFor("DOCS_ASSISTANT_SDK_BASE", "site"),
-      map: baseFor("DOCS_ASSISTANT_MAP_BASE", "map-site"),
-    },
-  };
-}
-
-/** `<link>` for the head and `<script>`s for the end of body; "" when off. */
-function assistantTags(slug, base) {
-  if (!ASSISTANT) return { head: "", body: "" };
-  const cfg = JSON.stringify({ ...ASSISTANT, page: slug }).replace(/</g, "\\u003c");
-  return {
-    head: `\n<link rel="stylesheet" href="${base}assets/assistant.css">`,
-    body: `\n<script>window.DOCS_ASSISTANT=${cfg};</script>\n<script src="${base}assets/assistant.js"></script>`,
-  };
 }
 
 /* ===================================================================== */
@@ -805,7 +743,6 @@ function renderPager(currentSlug) {
 
 function renderShell({ slug, title, description, section, bodyHtml, headings, layout }) {
   const base = rootPrefixFor(slug);
-  const assistant = assistantTags(slug, base);
   const pageTitle = slug === "" ? `${SITE.titleSuffix} documentation` : `${title} · ${SITE.titleSuffix}`;
 
   const crumbs = layout === "landing" ? "" :
@@ -837,7 +774,7 @@ function renderShell({ slug, title, description, section, bodyHtml, headings, la
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
-<link rel="stylesheet" href="${base}assets/styles.css">${assistant.head}
+<link rel="stylesheet" href="${base}assets/styles.css">
 <script>${NO_FLASH}</script>
 </head>
 <body>
@@ -870,7 +807,7 @@ function renderShell({ slug, title, description, section, bodyHtml, headings, la
 </div>
 <script src="${base}assets/search-index.js"></script>
 <script>window.DOCS_BASE=${JSON.stringify(base)};</script>
-<script src="${base}assets/docs.js"></script>${assistant.body}
+<script src="${base}assets/docs.js"></script>
 </body>
 </html>
 `;
@@ -914,8 +851,6 @@ function placeholderBody(label) {
 rmrf(DIST_DIR);
 fs.mkdirSync(DIST_DIR, { recursive: true });
 copyDir(ASSETS_DIR, path.join(DIST_DIR, "assets"));
-if (!ASSISTANT) for (const f of ASSISTANT_FILES) fs.rmSync(path.join(DIST_DIR, "assets", f), { force: true });
-if (ASSISTANT) console.log(`docs assistant: on → ${ASSISTANT.endpoint} (sdk base ${ASSISTANT.bases.sdk ?? "none"}, map base ${ASSISTANT.bases.map ?? "none"})`);
 
 const fragmentSlugs = listFragments(CONTENT_DIR).map((s) => (s === "index" ? "" : s));
 for (const s of fragmentSlugs) {
