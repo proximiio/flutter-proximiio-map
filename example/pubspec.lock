@@ -88,7 +88,7 @@ packages:
     description:
       path: "."
       ref: "6.0.0-beta.1"
-      resolved-ref: a7a9516c438aabf7d44e3ea39fd2621b2572e09d
+      resolved-ref: a398eedc4afad232a77bfe0e3e810e79c8f4b964
       url: "https://github.com/proximiio/flutter-proximiio"
     source: git
     version: "6.0.0-beta.1"
