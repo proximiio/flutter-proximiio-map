@@ -7,7 +7,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_proximiio_map'
-  s.version          = '6.0.0-beta.2'
+  s.version          = '6.0.0-beta.3'
   s.summary          = 'Proximi.io venue map for Flutter (platform view over the Proximi.io iOS Map v6).'
   s.description      = <<-DESC
 Flutter platform view over the Proximi.io iOS Map v6: venue map, floors, routes, guidance and journeys.

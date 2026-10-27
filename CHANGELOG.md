@@ -7,6 +7,17 @@ version (see README).
 
 ## [Unreleased]
 
+## [6.0.0-beta.3] - 2026-10-27
+
+### Changed
+- Depends on `flutter_proximiio` 6.0.0-beta.3.
+- iOS: the map builds on `ProximiioMap` 6.0.0-beta.54 and the iOS SDK 6.0.0-beta.66 (was 6.0.0-beta.51 and
+  6.0.0-beta.64). Android stays on `proximiio-map-live` 6.0.0-beta.27.
+- iOS: a map created after the last position shows the dot at once; before, it waited for the next one.
+- iOS: when the SDK starts without a connection, the map draws the stored venue data.
+- iOS: when the API has refused the token for at least two hours and the SDK deletes its data, the map
+  drops the venue, the route and the dot, and deletes its style and tile caches.
+
 ## [6.0.0-beta.2] - 2026-10-26
 
 ### Changed
