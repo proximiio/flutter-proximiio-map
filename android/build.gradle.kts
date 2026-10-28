@@ -1,5 +1,5 @@
 group = "io.proximi.flutter_proximiio_map"
-version = "6.0.0-beta.3"
+version = "6.0.0-beta.4"
 
 buildscript {
     val kotlinVersion = "2.4.0"
@@ -69,7 +69,7 @@ kotlin {
 
 dependencies {
     // Pinned exactly; the map pins the SDK at the version flutter_proximiio uses.
-    implementation("io.proximi.map:proximiio-map-live:6.0.0-beta.27")
+    implementation("io.proximi.map:proximiio-map-live:6.0.0-beta.28")
     implementation("io.proximi.sdk:proximiio:6.0.0-beta.31")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
     implementation("androidx.lifecycle:lifecycle-runtime:2.10.0")

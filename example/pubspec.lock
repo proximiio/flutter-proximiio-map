@@ -87,18 +87,18 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "6.0.0-beta.3"
-      resolved-ref: b344208a3df8015593d9fb7c7c4d33e1026be0c1
+      ref: "6.0.0-beta.4"
+      resolved-ref: "86284e9d640200102ed33ade9e1eba9ee413e2e8"
       url: "https://github.com/proximiio/flutter-proximiio"
     source: git
-    version: "6.0.0-beta.3"
+    version: "6.0.0-beta.4"
   flutter_proximiio_map:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "6.0.0-beta.3"
+    version: "6.0.0-beta.4"
   flutter_test:
     dependency: "direct dev"
     description: flutter

@@ -7,6 +7,18 @@ version (see README).
 
 ## [Unreleased]
 
+## [6.0.0-beta.4] - 2026-10-28
+
+### Changed
+- Depends on `flutter_proximiio` 6.0.0-beta.4.
+- iOS: the map builds on `ProximiioMap` 6.0.0-beta.55 (was 6.0.0-beta.54), still on the iOS SDK 6.0.0-beta.66.
+  Android: `proximiio-map-live` 6.0.0-beta.28 (was 6.0.0-beta.27), still on the Android SDK 6.0.0-beta.31.
+- iOS: when two places have a floor at the same level, the floor of the place the visitor is in names the
+  level, otherwise the floor with the smallest id. Before, the last floor named it. Android follows in a later
+  map release.
+- iOS: custom raster tiles set in the style in the Portal are drawn.
+- Android: a map created after the last position shows the dot at once; before, it waited for the next one.
+
 ## [6.0.0-beta.3] - 2026-10-27
 
 ### Changed
