@@ -7,6 +7,19 @@ version (see README).
 
 ## [Unreleased]
 
+## [6.0.0-beta.5] - 2026-10-29
+
+### Changed
+- Depends on `flutter_proximiio` 6.0.0-beta.5.
+- iOS: the map builds on `ProximiioMap` 6.0.0-beta.57 and the iOS SDK 6.0.0-beta.67 (was 6.0.0-beta.55 and
+  6.0.0-beta.66). Android: `proximiio-map-live` 6.0.0-beta.31 (was 6.0.0-beta.28), with the Android SDK
+  6.0.0-beta.35 that flutter_proximiio brings.
+- Android: when two places have a floor at the same level, the floor of the place the visitor is in names the
+  level, otherwise the floor with the smallest id, as on iOS since 6.0.0-beta.4.
+- Android: custom raster tiles set in the style in the Portal are drawn, as on iOS.
+- Both: floors and places deleted on the server leave the map, through the SDKs' venue data changes.
+- Android: when the API keeps refusing the token and the SDK deletes its data, the map drops the venue, as on iOS.
+
 ## [6.0.0-beta.4] - 2026-10-28
 
 ### Changed
