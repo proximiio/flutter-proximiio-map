@@ -7,6 +7,19 @@ version (see README).
 
 ## [Unreleased]
 
+## [6.0.0-beta.6] - 2026-10-30
+
+### Changed
+- Depends on `flutter_proximiio` 6.0.0-beta.6.
+- iOS: the map builds on `ProximiioMap` 6.0.0-beta.60 and the iOS SDK 6.0.0-beta.68 (was 6.0.0-beta.57 and
+  6.0.0-beta.67). Android: `proximiio-map-live` 6.0.0-beta.37 (was 6.0.0-beta.31), with the Android SDK
+  6.0.0-beta.36 that flutter_proximiio brings.
+- Faster, both: a map reads the venue's features once when it opens, and the SDKs answer it from memory.
+- Faster, Android: the venue's features are encoded once per process, as soon as the SDK has them, and only what
+  changed is encoded again when a map opens later. MapLibre fetches up to 20 requests at once from the API host
+  (was 5). The encoded venue stays in memory after the map closes, a few MB for a large venue.
+- Both: when the style's metadata has `proximiio:raster:bounds`, the map asks for no raster tile outside it.
+
 ## [6.0.0-beta.5] - 2026-10-29
 
 ### Changed
