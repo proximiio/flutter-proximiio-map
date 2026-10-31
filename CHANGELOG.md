@@ -7,6 +7,13 @@ version (see README).
 
 ## [Unreleased]
 
+## [6.0.0-beta.7] - 2026-10-31
+
+### Changed
+- Depends on `flutter_proximiio` 6.0.0-beta.7, which adds `Proximiio.compassHeadings` (the phone's compass, for a
+  marker that turns with the phone). No change in this plugin; the native maps stay on iOS map 6.0.0-beta.60 and
+  Android map 6.0.0-beta.37.
+
 ## [6.0.0-beta.6] - 2026-10-30
 
 ### Changed

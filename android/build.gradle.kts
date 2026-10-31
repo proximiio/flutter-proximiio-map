@@ -1,5 +1,5 @@
 group = "io.proximi.flutter_proximiio_map"
-version = "6.0.0-beta.6"
+version = "6.0.0-beta.7"
 
 buildscript {
     val kotlinVersion = "2.4.0"

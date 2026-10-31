@@ -10,6 +10,7 @@ Each release pins exact native versions; they are built and tested together.
 
 | flutter_proximiio_map | flutter_proximiio | iOS Map (`ProximiioMap`) | Android Map (`io.proximi.map:proximiio-map-live`) |
 |---|---|---|---|
+| 6.0.0-beta.7 | 6.0.0-beta.7 | 6.0.0-beta.60 | 6.0.0-beta.37 |
 | 6.0.0-beta.6 | 6.0.0-beta.6 | 6.0.0-beta.60 | 6.0.0-beta.37 |
 | 6.0.0-beta.5 | 6.0.0-beta.5 | 6.0.0-beta.57 | 6.0.0-beta.31 |
 | 6.0.0-beta.4 | 6.0.0-beta.4 | 6.0.0-beta.55 | 6.0.0-beta.28 |
@@ -29,11 +30,11 @@ dependencies:
   flutter_proximiio:
     git:
       url: https://github.com/proximiio/flutter-proximiio
-      ref: 6.0.0-beta.6
+      ref: 6.0.0-beta.7
   flutter_proximiio_map:
     git:
       url: https://github.com/proximiio/flutter-proximiio-map
-      ref: 6.0.0-beta.6
+      ref: 6.0.0-beta.7
 ```
 
 Set up `flutter_proximiio` first (repositories, `Info.plist` keys, Android build settings).
